@@ -21,13 +21,10 @@ import com.example.wechatmoments.ui.theme.Shapes
 import com.example.wechatmoments.ui.theme.WeChatMomentsTheme
 
 @Composable
-fun BasicTweetCell() {
+fun BasicTweetCell(userName: String, tweetContent: String, time: String) {
     Column {
         CellContent(
-            "User", """This is 
-                                        a 
-                                            basic tweet cell 
-                                                demo""", "1 day ago"
+            userName, tweetContent, time
         )
         Divider(modifier = Modifier.fillMaxWidth(), color = Color.LightGray.copy(alpha = 0.5f))
     }
@@ -119,9 +116,24 @@ private fun TimeAndMore(time: String) {
 fun BasicTweetCellPreview() {
     WeChatMomentsTheme {
         Column {
-            BasicTweetCell()
-            BasicTweetCell()
-            BasicTweetCell()
+            BasicTweetCell(
+                "User", """This is 
+                                                        a 
+                                                            basic tweet cell 
+                                                                demo""", "1 day ago"
+            )
+            BasicTweetCell(
+                "User", """This is 
+                                                        a 
+                                                            basic tweet cell 
+                                                                demo""", "1 day ago"
+            )
+            BasicTweetCell(
+                "User", """This is 
+                                                        a 
+                                                            basic tweet cell 
+                                                                demo""", "1 day ago"
+            )
         }
     }
 }

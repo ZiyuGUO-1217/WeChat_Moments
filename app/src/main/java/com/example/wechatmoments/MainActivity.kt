@@ -7,15 +7,16 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import com.example.wechatmoments.ui.MomentsScreen
 import com.example.wechatmoments.ui.theme.WeChatMomentsTheme
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             WeChatMomentsTheme {
-                // A surface container using the 'background' color from the theme
                 Surface(color = MaterialTheme.colors.background) {
-                    MomentsScreen("Android")
+                    MomentsScreen()
                 }
             }
         }
