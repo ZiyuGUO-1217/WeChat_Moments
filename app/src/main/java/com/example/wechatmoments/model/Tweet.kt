@@ -1,8 +1,10 @@
 package com.example.wechatmoments.model
 
+import java.net.URL
+
 data class Tweet(
+    val content: String,
     val userName: String,
-    val tweetContent: String,
-    val imageList: Int = 0,
+    val images: List<URL> = emptyList(),
     val time: String
 )

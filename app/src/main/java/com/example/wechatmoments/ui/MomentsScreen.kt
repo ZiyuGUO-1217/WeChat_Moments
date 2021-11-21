@@ -20,7 +20,7 @@ fun MomentsScreen() {
         items(state.tweetList) {
             BasicTweetCell(
                 userName = it.userName,
-                tweetContent = it.tweetContent,
+                tweetContent = it.content,
                 time = it.time
             )
         }

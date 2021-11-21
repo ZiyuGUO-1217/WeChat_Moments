@@ -29,13 +29,17 @@ class MomentsViewModel @Inject constructor(
             _flow.value = value
         }
 
+    private fun updateState(block: MomentsState.() -> MomentsState) {
+        state = block(state)
+    }
+
     init {
         val tweetList = momentsRepository.loadLocalData()
-        state = state.copy(tweetList = tweetList)
+        updateState { copy(tweetList = tweetList) }
     }
 }
 
 @Composable
-fun MomentsViewModel.collectAsState() : State<MomentsState> {
+fun MomentsViewModel.collectAsState(): State<MomentsState> {
     return flow.collectAsState(initial = state)
 }
