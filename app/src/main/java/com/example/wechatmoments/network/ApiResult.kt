@@ -1,12 +1,14 @@
 package com.example.wechatmoments.network
 
+import android.util.Log
+import retrofit2.HttpException
 import java.io.IOException
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
 
-sealed interface ApiResult {
-    data class Success<T>(val data: T) : ApiResult
-    data class Error(val errorType: ErrorType) : ApiResult
+sealed class ApiResult<out T> {
+    data class Success<T>(val data: T) : ApiResult<T>()
+    data class Error(val errorType: ErrorType) : ApiResult<Nothing>()
 }
 
 sealed interface ErrorType {
@@ -15,41 +17,44 @@ sealed interface ErrorType {
 }
 
 @ExperimentalContracts
-fun <T> ApiResult.onSuccess(onSuccess: (T) -> Unit): ApiResult {
-    if (this.isSuccess()) onSuccess(this.data as T)
+suspend fun <T> ApiResult<T>.onSuccess(action: suspend (T) -> Unit): ApiResult<T> {
+    if (this.isSuccess()) action(this.data)
     return this
 }
 
 @ExperimentalContracts
-fun ApiResult.onError(onError: (ErrorType) -> Unit): ApiResult {
-    if (this.isError()) onError(this.errorType)
+suspend fun <T> ApiResult<T>.onError(action: suspend (ErrorType) -> Unit): ApiResult<T> {
+    if (this.isError()) action(this.errorType)
     return this
 }
 
 @ExperimentalContracts
-fun ApiResult.isSuccess(): Boolean {
+fun <T> ApiResult<T>.isSuccess(): Boolean {
     contract {
-        returns(true) implies (this@isSuccess is ApiResult.Success<*>)
+        returns(true) implies (this@isSuccess is ApiResult.Success)
     }
-    return this is ApiResult.Success<*>
+    return this is ApiResult.Success
 }
 
 @ExperimentalContracts
-fun ApiResult.isError(): Boolean {
+fun <T> ApiResult<T>.isError(): Boolean {
     contract {
         returns(true) implies (this@isError is ApiResult.Error)
     }
     return this is ApiResult.Error
 }
 
-fun callApi(block: () -> Unit): ApiResult {
+fun <T> callApi(block: () -> ApiResult<T>): ApiResult<T> {
     return try {
-        ApiResult.Success(block())
-    } catch (e: Exception) {
-        if (e is IOException) {
-            ApiResult.Error(ErrorType.NetworkError)
-        } else {
-            ApiResult.Error(ErrorType.ServerError)
+        block()
+    } catch (e: Throwable) {
+        when (e) {
+            is IOException -> ApiResult.Error(ErrorType.NetworkError)
+            is HttpException -> {
+                Log.d("callApi:", "${e.message}")
+                ApiResult.Error(ErrorType.ServerError)
+            }
+            else -> ApiResult.Error(ErrorType.ServerError)
         }
     }
 }
