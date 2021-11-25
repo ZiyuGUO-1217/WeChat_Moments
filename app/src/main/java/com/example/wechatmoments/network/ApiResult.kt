@@ -16,19 +16,18 @@ sealed interface ErrorType {
     object ServerError : ErrorType
 }
 
-@ExperimentalContracts
 suspend fun <T> ApiResult<T>.onSuccess(action: suspend (T) -> Unit): ApiResult<T> {
     if (this.isSuccess()) action(this.data)
     return this
 }
 
-@ExperimentalContracts
 suspend fun <T> ApiResult<T>.onError(action: suspend (ErrorType) -> Unit): ApiResult<T> {
     if (this.isError()) action(this.errorType)
     return this
 }
 
-@ExperimentalContracts
+
+@OptIn(ExperimentalContracts::class)
 fun <T> ApiResult<T>.isSuccess(): Boolean {
     contract {
         returns(true) implies (this@isSuccess is ApiResult.Success)
@@ -36,7 +35,8 @@ fun <T> ApiResult<T>.isSuccess(): Boolean {
     return this is ApiResult.Success
 }
 
-@ExperimentalContracts
+
+@OptIn(ExperimentalContracts::class)
 fun <T> ApiResult<T>.isError(): Boolean {
     contract {
         returns(true) implies (this@isError is ApiResult.Error)
@@ -44,7 +44,7 @@ fun <T> ApiResult<T>.isError(): Boolean {
     return this is ApiResult.Error
 }
 
-fun <T> callApi(block: () -> ApiResult<T>): ApiResult<T> {
+inline fun <T> callApi(block: () -> ApiResult<T>): ApiResult<T> {
     return try {
         block()
     } catch (e: Throwable) {

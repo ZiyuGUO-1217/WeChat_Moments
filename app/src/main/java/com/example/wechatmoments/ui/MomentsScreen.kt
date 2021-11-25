@@ -19,9 +19,9 @@ fun MomentsScreen() {
     LazyColumn {
         items(state.tweetList) {
             BasicTweetCell(
-                userName = it.userName,
+                userName = it.sender.nickName,
                 tweetContent = it.content,
-                time = it.time
+                time = "1 minute ago"
             )
         }
     }

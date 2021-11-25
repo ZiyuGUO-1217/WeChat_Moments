@@ -36,8 +36,3 @@ object NetworkModule {
             .build()
     }
 }
-
-@Singleton
-@Provides
-fun provideRemoteDataSource(retrofit: Retrofit): RemoteDateSource =
-    retrofit.create(RemoteDateSource::class.java)

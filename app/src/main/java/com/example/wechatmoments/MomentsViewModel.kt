@@ -1,20 +1,26 @@
 package com.example.wechatmoments
 
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.wechatmoments.data.MomentsRepository
 import com.example.wechatmoments.model.MomentsState
+import com.example.wechatmoments.network.onError
+import com.example.wechatmoments.network.onSuccess
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class MomentsViewModel @Inject constructor(
-    private val momentsRepository: MomentsRepository
+    private val repository: MomentsRepository
 ) : ViewModel() {
+    private val userName = "jsmith"
     private val _flow by lazy {
         MutableStateFlow(MomentsState())
     }
@@ -34,8 +40,40 @@ class MomentsViewModel @Inject constructor(
     }
 
     init {
-        val tweetList = momentsRepository.loadLocalData()
-        updateState { copy(tweetList = tweetList) }
+        viewModelScope.launch {
+            loadUserInfo()
+            loadTweetsList()
+        }
+    }
+
+    private suspend fun loadTweetsList() {
+        repository.getUserTweets(userName)
+            .onSuccess { tweetsList ->
+                Log.d("userInfo: success", "$tweetsList")
+                val validTweetsList = tweetsList
+                    .filter { it.content.isNotBlank() || it.images.isNotEmpty() }
+
+                updateState {
+                    copy(tweetList = validTweetsList)
+                }
+            }
+            .onError {
+                Log.d("userInfo: error", "$it")
+            }
+    }
+
+    private suspend fun loadUserInfo() {
+        repository.getUserInfo(userName)
+            .onSuccess { userInfo ->
+                Log.d("userInfo: success", "$userInfo")
+
+                updateState {
+                    copy(userInfo = userInfo)
+                }
+            }
+            .onError {
+                Log.d("userInfo: error", "$it")
+            }
     }
 }
 
