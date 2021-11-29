@@ -7,24 +7,19 @@ import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.annotation.ExperimentalCoilApi
-import coil.compose.ImagePainter
 import coil.compose.rememberImagePainter
-import coil.transform.CircleCropTransformation
 import com.example.wechatmoments.R
+import com.example.wechatmoments.model.Image
 import com.example.wechatmoments.model.Sender
 import com.example.wechatmoments.model.Tweet
 import com.example.wechatmoments.ui.theme.Shapes
@@ -51,6 +46,7 @@ private fun CellContent(tweet: Tweet, time: String) {
         TweetDetails(
             userName = tweet.sender.nickName,
             tweetContent = tweet.content,
+            imageList = tweet.images,
             time = time
         )
     }
@@ -76,10 +72,17 @@ private fun ProfileImage(imageUrl: String) {
 }
 
 @Composable
-private fun TweetDetails(userName: String, tweetContent: String, time: String) {
+private fun TweetDetails(
+    userName: String,
+    tweetContent: String,
+    imageList: List<Image>,
+    time: String
+) {
     Column(modifier = Modifier.padding(start = 12.dp)) {
         UserName(userName)
-        TweetContent(tweetContent)
+        if (tweetContent.isNotBlank()) TweetContent(tweetContent)
+        if (imageList.isNotEmpty()) ImageGrid(imageList)
+        Spacer(modifier = Modifier.height(12.dp))
         TimeAndMore(time)
     }
 }
@@ -139,7 +142,10 @@ fun BasicTweetCellPreview() {
                     userName = "User name"
                 ),
                 images = listOf(
-                    com.example.wechatmoments.model.Image(url = "fake")
+                    Image(url = "fake"),
+                    Image(url = "fake"),
+                    Image(url = "fake"),
+                    Image(url = "fake")
                 )
             ),
             time = "1 day ago"
