@@ -12,19 +12,22 @@ import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberImagePainter
 import com.example.wechatmoments.R
 
+private const val SINGLE_IMAGE_SIZE = 72
+private const val MAX_LINE_SIZE = 216
+
 @OptIn(ExperimentalCoilApi::class)
 @Composable
 fun SingleImageCell(modifier: Modifier = Modifier, imageUrl: String) {
-    val (cellHeight, setCellHeight) = remember { mutableStateOf(72.dp) }
-    val (cellWidth, setCellWidth) = remember { mutableStateOf(72.dp) }
+    val (cellHeight, setCellHeight) = remember { mutableStateOf(SINGLE_IMAGE_SIZE.dp) }
+    val (cellWidth, setCellWidth) = remember { mutableStateOf(SINGLE_IMAGE_SIZE.dp) }
 
     val painter = rememberImagePainter(
         data = imageUrl,
         onExecute = { _, current ->
             val scale = if (current.size.height >= current.size.width) {
-                current.size.height / 216
+                current.size.height / MAX_LINE_SIZE
             } else {
-                current.size.width / 216
+                current.size.width / MAX_LINE_SIZE
             }
             val scaledHeight = current.size.height / scale
             val scaledWidth = current.size.width / scale

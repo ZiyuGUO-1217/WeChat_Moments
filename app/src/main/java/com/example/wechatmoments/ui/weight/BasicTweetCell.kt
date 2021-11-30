@@ -82,7 +82,6 @@ private fun TweetDetails(
         UserName(userName)
         if (tweetContent.isNotBlank()) TweetContent(tweetContent)
         if (imageList.isNotEmpty()) Images(imageList)
-        Spacer(modifier = Modifier.height(12.dp))
         TimeAndMore(time)
     }
 }
@@ -100,10 +99,7 @@ private fun UserName(userName: String) {
 
 @Composable
 private fun TweetContent(tweetContent: String) {
-    Text(
-        modifier = Modifier.padding(bottom = 8.dp),
-        text = tweetContent
-    )
+    MultiLineStateText(tweetContent)
 }
 
 @Composable
@@ -113,6 +109,7 @@ private fun Images(imageList: List<Image>) {
     } else {
         ImageGrid(imageList)
     }
+    Spacer(modifier = Modifier.padding(bottom = 12.dp))
 }
 
 @Composable
