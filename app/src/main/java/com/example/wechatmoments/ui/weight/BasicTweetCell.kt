@@ -81,7 +81,7 @@ private fun TweetDetails(
     Column(modifier = Modifier.padding(start = 12.dp)) {
         UserName(userName)
         if (tweetContent.isNotBlank()) TweetContent(tweetContent)
-        if (imageList.isNotEmpty()) ImageGrid(imageList)
+        if (imageList.isNotEmpty()) Images(imageList)
         Spacer(modifier = Modifier.height(12.dp))
         TimeAndMore(time)
     }
@@ -104,6 +104,15 @@ private fun TweetContent(tweetContent: String) {
         modifier = Modifier.padding(bottom = 8.dp),
         text = tweetContent
     )
+}
+
+@Composable
+private fun Images(imageList: List<Image>) {
+    if (imageList.size == 1) {
+        SingleImageCell(imageUrl = imageList.first().url)
+    } else {
+        ImageGrid(imageList)
+    }
 }
 
 @Composable
