@@ -104,11 +104,7 @@ private fun TweetContent(tweetContent: String) {
 
 @Composable
 private fun Images(imageList: List<Image>) {
-    if (imageList.size == 1) {
-        SingleImageCell(imageUrl = imageList.first().url)
-    } else {
-        ImageGrid(imageList)
-    }
+    ImageGrid(imageList)
     Spacer(modifier = Modifier.padding(bottom = 12.dp))
 }
 
