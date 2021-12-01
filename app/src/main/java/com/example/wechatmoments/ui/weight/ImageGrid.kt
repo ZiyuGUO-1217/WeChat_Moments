@@ -24,7 +24,7 @@ private const val SINGLE_IMAGE_SIZE = 72
 private const val MAX_LINE_SIZE = 216
 
 @Composable
-fun ImageGrid(imageList: List<Image>) {
+fun ImageGrid(modifier: Modifier = Modifier, imageList: List<Image>) {
     val listLength = imageList.size
     val endPadding = if (listLength == 4) 72.dp else 48.dp
 
@@ -32,7 +32,7 @@ fun ImageGrid(imageList: List<Image>) {
         SingleImageCell(imageUrl = imageList.first().url)
     } else {
         FlowRow(
-            modifier = Modifier.padding(end = endPadding),
+            modifier = modifier.padding(end = endPadding),
             mainAxisSpacing = 8.dp,
             crossAxisSpacing = 8.dp
         ) {

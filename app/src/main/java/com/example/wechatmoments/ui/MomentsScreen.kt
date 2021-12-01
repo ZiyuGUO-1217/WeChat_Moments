@@ -1,19 +1,16 @@
 package com.example.wechatmoments.ui
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Divider
-import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -21,7 +18,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -69,7 +65,7 @@ private fun CellContent(tweet: Tweet, time: String) {
         modifier = Modifier
             .padding(horizontal = 16.dp)
             .fillMaxWidth()
-            .padding(top = 20.dp, bottom = 16.dp),
+            .padding(top = 20.dp),
         verticalAlignment = Alignment.Top
     ) {
         ProfileImage(tweet.sender.avatar)
@@ -111,7 +107,7 @@ private fun TweetDetails(
     Column(modifier = Modifier.padding(start = 12.dp)) {
         UserName(userName)
         if (tweetContent.isNotBlank()) TweetContent(tweetContent)
-        if (imageList.isNotEmpty()) Images(imageList)
+        if (imageList.isNotEmpty()) ImageGrid(Modifier.padding(top = 8.dp), imageList)
         TimeAndMore(time)
     }
 }
@@ -133,32 +129,18 @@ private fun TweetContent(tweetContent: String) {
 }
 
 @Composable
-private fun Images(imageList: List<Image>) {
-    ImageGrid(imageList)
-    Spacer(modifier = Modifier.padding(bottom = 12.dp))
-}
-
-@Composable
 private fun TimeAndMore(time: String) {
+    val modifier = Modifier.padding(vertical = 8.dp)
+
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(36.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(text = time, color = Color.Gray)
-        Box(
-            modifier = Modifier
-                .clip(Shapes.medium)
-                .background(Color.LightGray.copy(alpha = 0.5f)),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                modifier = Modifier.padding(horizontal = 4.dp),
-                painter = painterResource(id = R.drawable.ic_more_horiz),
-                contentDescription = "more",
-                tint = Color(0XFF576B95)
-            )
-        }
+        Text(modifier = modifier, text = time, color = Color.Gray)
+        MoreMenu()
     }
 }
 

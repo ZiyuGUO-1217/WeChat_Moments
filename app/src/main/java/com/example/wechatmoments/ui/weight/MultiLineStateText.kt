@@ -34,7 +34,7 @@ fun MultiLineStateText(tweetContent: String) {
 
     Column {
         Text(
-            modifier = Modifier.padding(bottom = 8.dp),
+            modifier = Modifier,
             text = tweetContent,
             onTextLayout = { result ->
                 if (result.didOverflowHeight) setLineState(LineState.CLIP)
@@ -45,7 +45,7 @@ fun MultiLineStateText(tweetContent: String) {
         if (lineState != LineState.DEFAULT) {
             Text(
                 modifier = Modifier
-                    .padding(bottom = 8.dp)
+                    .padding(top = 8.dp)
                     .clickable { onClick.invoke() },
                 text = buttonText,
                 color = tertiaryBlue

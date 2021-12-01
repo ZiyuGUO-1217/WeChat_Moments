@@ -2,4 +2,6 @@
     <string name="app_name">WeChat Moments</string>
     <string name="moments_tweet_content_expand">Expand</string>
     <string name="moments_tweet_content_clip">Clip</string>
+    <string name="moments_tweet_menu_likes">Likes</string>
+    <string name="moments_tweet_menu_comments">Comments</string>
 </resources>
