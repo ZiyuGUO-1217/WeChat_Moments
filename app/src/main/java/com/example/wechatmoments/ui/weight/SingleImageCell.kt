@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil.annotation.ExperimentalCoilApi
+import coil.compose.ImagePainter
 import coil.compose.rememberImagePainter
 import com.example.wechatmoments.R
 
@@ -24,15 +25,17 @@ fun SingleImageCell(modifier: Modifier = Modifier, imageUrl: String) {
     val painter = rememberImagePainter(
         data = imageUrl,
         onExecute = { _, current ->
-            val scale = if (current.size.height >= current.size.width) {
-                current.size.height / MAX_LINE_SIZE
-            } else {
-                current.size.width / MAX_LINE_SIZE
+            if (current.state is ImagePainter.State.Success) {
+                val scale = if (current.size.height >= current.size.width) {
+                    current.size.height / MAX_LINE_SIZE
+                } else {
+                    current.size.width / MAX_LINE_SIZE
+                }
+                val scaledHeight = current.size.height / scale
+                val scaledWidth = current.size.width / scale
+                setCellHeight(scaledHeight.dp)
+                setCellWidth(scaledWidth.dp)
             }
-            val scaledHeight = current.size.height / scale
-            val scaledWidth = current.size.width / scale
-            setCellHeight(scaledHeight.dp)
-            setCellWidth(scaledWidth.dp)
             true
         },
         builder = {
