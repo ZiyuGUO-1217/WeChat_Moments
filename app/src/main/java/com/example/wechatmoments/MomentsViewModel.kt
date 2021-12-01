@@ -11,16 +11,17 @@ import com.example.wechatmoments.model.MomentsState
 import com.example.wechatmoments.network.onError
 import com.example.wechatmoments.network.onSuccess
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 @HiltViewModel
 class MomentsViewModel @Inject constructor(
     private val repository: MomentsRepository
 ) : ViewModel() {
     private val userName = "jsmith"
+
     private val _flow by lazy {
         MutableStateFlow(MomentsState())
     }
@@ -40,40 +41,39 @@ class MomentsViewModel @Inject constructor(
     }
 
     init {
+        loadUserInfo()
+        loadTweetsList()
+    }
+
+    private fun loadTweetsList() {
         viewModelScope.launch {
-            loadUserInfo()
-            loadTweetsList()
+            repository.getUserTweets(userName)
+                .onSuccess { tweetsList ->
+                    val validTweetsList = tweetsList
+                        .filter { it.content.isNotBlank() || it.images.isNotEmpty() }
+
+                    updateState {
+                        copy(tweetList = validTweetsList)
+                    }
+                }
+                .onError {
+                    Log.d("userInfo: error", "$it")
+                }
         }
     }
 
-    private suspend fun loadTweetsList() {
-        repository.getUserTweets(userName)
-            .onSuccess { tweetsList ->
-                Log.d("userInfo: success", "$tweetsList")
-                val validTweetsList = tweetsList
-                    .filter { it.content.isNotBlank() || it.images.isNotEmpty() }
-
-                updateState {
-                    copy(tweetList = validTweetsList)
+    private fun loadUserInfo() {
+        viewModelScope.launch {
+            repository.getUserInfo(userName)
+                .onSuccess { userInfo ->
+                    updateState {
+                        copy(userInfo = userInfo)
+                    }
                 }
-            }
-            .onError {
-                Log.d("userInfo: error", "$it")
-            }
-    }
-
-    private suspend fun loadUserInfo() {
-        repository.getUserInfo(userName)
-            .onSuccess { userInfo ->
-                Log.d("userInfo: success", "$userInfo")
-
-                updateState {
-                    copy(userInfo = userInfo)
+                .onError {
+                    Log.d("userInfo: error", "$it")
                 }
-            }
-            .onError {
-                Log.d("userInfo: error", "$it")
-            }
+        }
     }
 }
 
