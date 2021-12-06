@@ -29,7 +29,10 @@ fun ImageGrid(modifier: Modifier = Modifier, imageList: List<Image>) {
     val endPadding = if (listLength == 4) 72.dp else 48.dp
 
     if (imageList.size == 1) {
-        SingleImageCell(imageUrl = imageList.first().url)
+        SingleImageCell(
+            modifier = modifier,
+            imageUrl = imageList.first().url
+        )
     } else {
         FlowRow(
             modifier = modifier.padding(end = endPadding),

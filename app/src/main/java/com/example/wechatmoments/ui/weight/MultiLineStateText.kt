@@ -1,7 +1,6 @@
 package com.example.wechatmoments.ui.weight
 
 import android.util.Log
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
@@ -12,9 +11,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.wechatmoments.R
+import com.example.wechatmoments.ui.theme.clickableWithoutRipple
 import com.example.wechatmoments.ui.theme.tertiaryBlue
 
-private const val DEFAULT_MAX_LINES = 5
+private const val DEFAULT_MAX_LINES = 8
+private const val CLIPPED_MAX_LINES = 5
 
 @Composable
 fun MultiLineStateText(tweetContent: String) {
@@ -32,9 +33,14 @@ fun MultiLineStateText(tweetContent: String) {
         }
     }
 
+    val shouldBeClipped = lineState != LineState.DEFAULT
     Column {
         Text(
-            modifier = Modifier,
+            modifier = Modifier
+                .padding(top = 8.dp)
+                .clickableWithoutRipple {
+                    if (shouldBeClipped) onClick()
+                },
             text = tweetContent,
             onTextLayout = { result ->
                 if (result.didOverflowHeight) setLineState(LineState.CLIP)
@@ -42,20 +48,25 @@ fun MultiLineStateText(tweetContent: String) {
             maxLines = lineState.maxLines
         )
 
-        if (lineState != LineState.DEFAULT) {
-            Text(
-                modifier = Modifier
-                    .padding(top = 8.dp)
-                    .clickable { onClick.invoke() },
-                text = buttonText,
-                color = tertiaryBlue
-            )
+        if (shouldBeClipped) {
+            ClipOrExpandButton(buttonText, onClick)
         }
     }
 }
 
+@Composable
+private fun ClipOrExpandButton(buttonText: String, onClick: () -> Any) {
+    Text(
+        modifier = Modifier
+            .padding(top = 8.dp)
+            .clickableWithoutRipple { onClick.invoke() },
+        text = buttonText,
+        color = tertiaryBlue
+    )
+}
+
 enum class LineState(val maxLines: Int) {
     DEFAULT(DEFAULT_MAX_LINES),
-    CLIP(DEFAULT_MAX_LINES),
+    CLIP(CLIPPED_MAX_LINES),
     EXPAND(Int.MAX_VALUE)
 }

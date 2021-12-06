@@ -115,7 +115,7 @@ private fun TweetDetails(
 @Composable
 private fun UserName(userName: String) {
     Text(
-        modifier = Modifier.padding(bottom = 8.dp),
+        modifier = Modifier,
         text = userName,
         fontSize = 17.sp,
         color = Color(0XFF576B95),
