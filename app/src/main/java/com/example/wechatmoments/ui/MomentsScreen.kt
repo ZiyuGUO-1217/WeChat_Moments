@@ -1,7 +1,6 @@
 package com.example.wechatmoments.ui
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -137,10 +136,14 @@ private fun TimeAndMore(time: String) {
         modifier = Modifier
             .fillMaxWidth()
             .height(36.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(modifier = modifier, text = time, color = Color.Gray)
+        Text(
+            modifier = modifier.padding(end = 8.dp),
+            text = time,
+            color = Color.Gray,
+            fontSize = 13.sp
+        )
         MoreMenu()
     }
 }
