@@ -85,6 +85,7 @@ private fun ProfileImage(imageUrl: String) {
         data = imageUrl,
         builder = {
             placeholder(R.drawable.defaultprofileimage)
+            error(R.drawable.defaultprofileimage)
         }
     )
 

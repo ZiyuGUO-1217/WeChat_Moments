@@ -1,20 +1,26 @@
 package com.example.wechatmoments.ui.weight
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.ImagePainter
 import coil.compose.rememberImagePainter
+import com.example.wechatmoments.R
 import com.example.wechatmoments.model.Image
 import com.example.wechatmoments.ui.theme.WeChatMomentsTheme
 import com.google.accompanist.flowlayout.FlowRow
@@ -82,19 +88,41 @@ private fun BasicImageCell(
     cellWidth: Dp = SINGLE_IMAGE_SIZE.dp,
     cellHeight: Dp = SINGLE_IMAGE_SIZE.dp
 ) {
-    val placeholderVisible = painter.state is ImagePainter.State.Loading
+    val isImageLoading = painter.state is ImagePainter.State.Loading
 
-    Image(
-        painter = painter,
-        contentDescription = "image",
-        modifier = modifier
-            .size(width = cellWidth, height = cellHeight)
-            .placeholder(
-                visible = placeholderVisible,
-                color = Color.LightGray
-            ),
-        contentScale = ContentScale.Crop
-    )
+    Box(modifier = modifier, contentAlignment = Alignment.Center) {
+        StatusIconSelector(painter.state)
+
+        Image(
+            painter = painter,
+            contentDescription = "image",
+            modifier = modifier
+                .size(width = cellWidth, height = cellHeight)
+                .placeholder(
+                    visible = isImageLoading,
+                    color = Color.LightGray
+                ),
+            contentScale = ContentScale.Crop
+        )
+    }
+}
+
+@ExperimentalCoilApi
+@Composable
+fun StatusIconSelector(state: ImagePainter.State) {
+    when (state) {
+        is ImagePainter.State.Loading -> {
+            CircularProgressIndicator(color = Color.White)
+        }
+        is ImagePainter.State.Error -> {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_outline_error),
+                contentDescription = "error",
+                tint = Color.Red
+            )
+        }
+        else -> {}
+    }
 }
 
 @Preview(showBackground = true)
