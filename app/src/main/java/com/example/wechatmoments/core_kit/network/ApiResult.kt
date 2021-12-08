@@ -1,10 +1,10 @@
-package com.example.wechatmoments.network
+package com.example.wechatmoments.core_kit.network
 
 import android.util.Log
-import retrofit2.HttpException
 import java.io.IOException
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.contract
+import retrofit2.HttpException
 
 sealed class ApiResult<out T> {
     data class Success<T>(val data: T) : ApiResult<T>()

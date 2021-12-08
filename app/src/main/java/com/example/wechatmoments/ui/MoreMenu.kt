@@ -110,7 +110,7 @@ private fun MoreButton(onClick: () -> Unit) {
         modifier = Modifier
             .padding(start = 8.dp)
             .clip(Shapes.medium)
-            .background(Color.LightGray.copy(alpha = 0.5f))
+            .background(Color.LightGray.copy(alpha = 0.25f))
             .clickable { onClick.invoke() },
         contentAlignment = Alignment.Center
     ) {

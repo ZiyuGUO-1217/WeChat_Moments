@@ -6,10 +6,10 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.wechatmoments.core_kit.network.onError
+import com.example.wechatmoments.core_kit.network.onSuccess
 import com.example.wechatmoments.data.MomentsRepository
 import com.example.wechatmoments.model.MomentsState
-import com.example.wechatmoments.network.onError
-import com.example.wechatmoments.network.onSuccess
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow

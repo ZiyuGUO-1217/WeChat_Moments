@@ -1,14 +1,18 @@
 package com.example.wechatmoments.ui
 
+import android.util.Log
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -28,11 +32,13 @@ import coil.compose.rememberImagePainter
 import com.example.wechatmoments.MomentsViewModel
 import com.example.wechatmoments.R
 import com.example.wechatmoments.collectAsState
+import com.example.wechatmoments.model.Comment
 import com.example.wechatmoments.model.Image
 import com.example.wechatmoments.model.Sender
 import com.example.wechatmoments.model.Tweet
 import com.example.wechatmoments.ui.theme.Shapes
 import com.example.wechatmoments.ui.theme.WeChatMomentsTheme
+import com.example.wechatmoments.ui.weight.AnnotatedClickableText
 import com.example.wechatmoments.ui.weight.ImageGrid
 import com.example.wechatmoments.ui.weight.MultiLineStateText
 
@@ -72,6 +78,7 @@ private fun CellContent(tweet: Tweet, time: String) {
             userName = tweet.sender.nickName,
             tweetContent = tweet.content,
             imageList = tweet.images,
+            comments = tweet.comments,
             time = time
         )
     }
@@ -102,6 +109,7 @@ private fun TweetDetails(
     userName: String,
     tweetContent: String,
     imageList: List<Image>,
+    comments: List<Comment>,
     time: String
 ) {
     Column(modifier = Modifier.padding(start = 12.dp)) {
@@ -109,6 +117,7 @@ private fun TweetDetails(
         if (tweetContent.isNotBlank()) TweetContent(tweetContent)
         if (imageList.isNotEmpty()) ImageGrid(Modifier.padding(top = 8.dp), imageList)
         TimeAndMore(time)
+        if (comments.isNotEmpty()) TweetComments(comments)
     }
 }
 
@@ -126,6 +135,35 @@ private fun UserName(userName: String) {
 @Composable
 private fun TweetContent(tweetContent: String) {
     MultiLineStateText(tweetContent)
+}
+
+@Composable
+fun TweetComments(comments: List<Comment>) {
+    val commentsNumber = comments.size
+
+    Column(
+        modifier = Modifier
+            .padding(top = 4.dp, bottom = 16.dp)
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(2.dp))
+            .background(Color.LightGray.copy(alpha = 0.25f))
+            .padding(all = 4.dp)
+    ) {
+        comments.forEachIndexed { index, comment ->
+            TweetComment(comment)
+            if (index + 1 != commentsNumber) Spacer(modifier = Modifier.height(4.dp))
+        }
+    }
+}
+
+@Composable
+fun TweetComment(comment: Comment) {
+    AnnotatedClickableText {
+        appendAnnotatedText(text = comment.sender.nickName, annotation = "nick name") {
+            Log.d("comments", "nick name clicked!")
+        }
+        appendPlainText(text = ": " + comment.content)
+    }
 }
 
 @Composable
