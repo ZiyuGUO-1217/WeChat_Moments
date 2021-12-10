@@ -53,6 +53,7 @@ import com.example.wechatmoments.ui.weight.AnnotatedClickableText
 import com.example.wechatmoments.ui.weight.ImageGrid
 import com.example.wechatmoments.ui.weight.MomentsTopBar
 import com.example.wechatmoments.ui.weight.MultiLineStateText
+import com.google.accompanist.insets.statusBarsPadding
 import com.google.accompanist.placeholder.placeholder
 
 private val MOMENTS_HEADER_HEIGHT = 320.dp
@@ -68,7 +69,11 @@ fun MomentsScreen(viewModel: MomentsViewModel = hiltViewModel()) {
     val isHeaderVisible = lazyListState.firstVisibleItemIndex == 0
     topBarAlpha.value = calculateAlphaValue(lazyListState.firstVisibleItemScrollOffset, isHeaderVisible)
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(
+        modifier = Modifier
+            .statusBarsPadding()
+            .fillMaxSize()
+    ) {
         LazyColumn(
             state = lazyListState
         ) {
