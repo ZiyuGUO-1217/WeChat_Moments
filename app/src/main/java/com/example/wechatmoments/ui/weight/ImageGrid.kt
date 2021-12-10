@@ -26,13 +26,13 @@ import com.example.wechatmoments.ui.theme.WeChatMomentsTheme
 import com.google.accompanist.flowlayout.FlowRow
 import com.google.accompanist.placeholder.placeholder
 
-private const val SINGLE_IMAGE_SIZE = 72
+private const val SINGLE_IMAGE_SIZE = 76
 private const val MAX_LINE_SIZE = 216
 
 @Composable
 fun ImageGrid(modifier: Modifier = Modifier, imageList: List<Image>) {
     val listLength = imageList.size
-    val endPadding = if (listLength == 4) 72.dp else 48.dp
+    val endPadding = if (listLength == 4) 64.dp else 32.dp
 
     if (imageList.size == 1) {
         SingleImageCell(

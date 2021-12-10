@@ -3,31 +3,41 @@ package com.example.wechatmoments.ui
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.annotation.ExperimentalCoilApi
+import coil.compose.ImagePainter
 import coil.compose.rememberImagePainter
 import com.example.wechatmoments.MomentsViewModel
 import com.example.wechatmoments.R
@@ -36,24 +46,107 @@ import com.example.wechatmoments.model.Comment
 import com.example.wechatmoments.model.Image
 import com.example.wechatmoments.model.Sender
 import com.example.wechatmoments.model.Tweet
+import com.example.wechatmoments.model.UserInfo
 import com.example.wechatmoments.ui.theme.Shapes
 import com.example.wechatmoments.ui.theme.WeChatMomentsTheme
 import com.example.wechatmoments.ui.weight.AnnotatedClickableText
 import com.example.wechatmoments.ui.weight.ImageGrid
+import com.example.wechatmoments.ui.weight.MomentsTopBar
 import com.example.wechatmoments.ui.weight.MultiLineStateText
+import com.google.accompanist.placeholder.placeholder
+
+private val MOMENTS_HEADER_HEIGHT = 320.dp
+private val USER_AVATAR_SIZE = 80.dp
+private val USER_PROFILE_BOTTOM_OFFSET = 28.dp
 
 @Composable
 fun MomentsScreen(viewModel: MomentsViewModel = hiltViewModel()) {
     val state by viewModel.collectAsState()
+    val lazyListState = rememberLazyListState()
 
-    LazyColumn {
-        items(state.tweetList) {
-            BasicTweetCell(
-                tweet = it,
-                time = "1 minute ago"
+    val topBarAlpha = remember { mutableStateOf(0f) }
+    val isHeaderVisible = lazyListState.firstVisibleItemIndex == 0
+    topBarAlpha.value = calculateAlphaValue(lazyListState.firstVisibleItemScrollOffset, isHeaderVisible)
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(
+            state = lazyListState
+        ) {
+            item { UserProfile(state.userInfo) }
+            item { Spacer(modifier = Modifier.height(20.dp)) }
+            items(state.tweetList) {
+                BasicTweetCell(tweet = it, time = "1 minute ago")
+            }
+        }
+        MomentsTopBar(alpha = topBarAlpha.value)
+    }
+
+}
+
+@Composable
+private fun calculateAlphaValue(
+    scrollOffset: Int,
+    isItemVisible: Boolean
+): Float {
+    val density = LocalDensity.current
+    with(density) {
+        val threshold = (MOMENTS_HEADER_HEIGHT - USER_AVATAR_SIZE).toPx()
+
+        val scrollOffsetFromThreshold = scrollOffset - threshold
+        return when {
+            scrollOffsetFromThreshold in 0f..USER_PROFILE_BOTTOM_OFFSET.toPx() -> {
+                scrollOffsetFromThreshold / USER_PROFILE_BOTTOM_OFFSET.toPx() / 2 + 0.5f
+            }
+            isItemVisible && scrollOffsetFromThreshold < 0 -> 0f
+            else -> 1f
+        }
+    }
+}
+
+@Composable
+private fun UserProfile(userInfo: UserInfo) {
+    Box(modifier = Modifier.fillMaxWidth()) {
+        MomentsBackgroundImage(imageUrl = userInfo.profileImage)
+
+        Row(
+            modifier = Modifier
+                .padding(end = 8.dp)
+                .align(Alignment.BottomEnd),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = userInfo.nickName,
+                fontWeight = FontWeight.SemiBold,
+                color = Color.White,
+                fontSize = 19.sp
+            )
+            AvatarImage(
+                modifier = Modifier.padding(4.dp),
+                imageUrl = userInfo.avatar,
+                size = USER_AVATAR_SIZE
             )
         }
     }
+}
+
+@OptIn(ExperimentalCoilApi::class)
+@Composable
+fun MomentsBackgroundImage(imageUrl: String) {
+    val painter = rememberImagePainter(data = imageUrl)
+
+    Image(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(MOMENTS_HEADER_HEIGHT)
+            .offset(y = -(USER_PROFILE_BOTTOM_OFFSET))
+            .placeholder(
+                visible = (painter.state is ImagePainter.State.Success).not(),
+                color = Color.LightGray.copy(alpha = 0.25f)
+            ),
+        painter = painter,
+        contentDescription = "profile image",
+        contentScale = ContentScale.Crop
+    )
 }
 
 @Composable
@@ -73,7 +166,7 @@ private fun CellContent(tweet: Tweet, time: String) {
             .padding(top = 20.dp),
         verticalAlignment = Alignment.Top
     ) {
-        ProfileImage(tweet.sender.avatar)
+        AvatarImage(imageUrl = tweet.sender.avatar)
         TweetDetails(
             userName = tweet.sender.nickName,
             tweetContent = tweet.content,
@@ -86,7 +179,11 @@ private fun CellContent(tweet: Tweet, time: String) {
 
 @OptIn(ExperimentalCoilApi::class)
 @Composable
-private fun ProfileImage(imageUrl: String) {
+private fun AvatarImage(
+    modifier: Modifier = Modifier,
+    imageUrl: String,
+    size: Dp = 48.dp
+) {
     val painter = rememberImagePainter(
         data = imageUrl,
         builder = {
@@ -98,9 +195,10 @@ private fun ProfileImage(imageUrl: String) {
     Image(
         painter = painter,
         contentDescription = "profile image",
-        modifier = Modifier
-            .size(48.dp)
+        modifier = modifier
+            .size(size)
             .clip(Shapes.medium),
+        contentScale = ContentScale.FillBounds
     )
 }
 

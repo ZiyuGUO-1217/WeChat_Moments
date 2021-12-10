@@ -1,6 +1,7 @@
 package com.example.wechatmoments.ui.weight
 
 import android.util.Log
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
@@ -40,7 +41,8 @@ fun MultiLineStateText(tweetContent: String) {
                 .padding(top = 8.dp)
                 .clickableWithoutRipple {
                     if (shouldBeClipped) onClick()
-                },
+                }
+                .animateContentSize(),
             text = tweetContent,
             onTextLayout = { result ->
                 if (result.didOverflowHeight) setLineState(LineState.CLIP)
