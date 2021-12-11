@@ -1,43 +1,25 @@
 package com.example.wechatmoments
 
 import android.util.Log
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
-import androidx.compose.runtime.collectAsState
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.wechatmoments.core_kit.network.onError
-import com.example.wechatmoments.core_kit.network.onSuccess
 import com.example.wechatmoments.data.MomentsRepository
+import com.example.wechatmoments.model.MomentsAction
 import com.example.wechatmoments.model.MomentsState
+import com.example.wechatmoments.service.network.onError
+import com.example.wechatmoments.service.network.onSuccess
+import com.example.wechatmoments.service.viewmodel.BaseViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 
 @HiltViewModel
 class MomentsViewModel @Inject constructor(
     private val repository: MomentsRepository
-) : ViewModel() {
+) : BaseViewModel<MomentsState, MomentsAction>() {
     private val userName = "jsmith"
 
-    private val _flow by lazy {
-        MutableStateFlow(MomentsState())
-    }
-
-    val flow by lazy {
-        _flow.asSharedFlow()
-    }
-
-    var state
-        get() = _flow.value
-        private set(value) {
-            _flow.value = value
-        }
-
-    private fun updateState(block: MomentsState.() -> MomentsState) {
-        state = block(state)
+    override fun configureInitState(): MomentsState {
+        return MomentsState()
     }
 
     init {
@@ -45,7 +27,14 @@ class MomentsViewModel @Inject constructor(
         loadTweetsList()
     }
 
+    override fun dispatch(action: MomentsAction) {
+        when (action) {
+            MomentsAction.RefreshMoments -> loadTweetsList()
+        }
+    }
+
     private fun loadTweetsList() {
+        updateState { copy(isRefreshing = true) }
         viewModelScope.launch {
             repository.getUserTweets(userName)
                 .onSuccess { tweetsList ->
@@ -59,6 +48,7 @@ class MomentsViewModel @Inject constructor(
                 .onError {
                     Log.d("userInfo: error", "$it")
                 }
+            updateState { copy(isRefreshing = false) }
         }
     }
 
@@ -75,9 +65,4 @@ class MomentsViewModel @Inject constructor(
                 }
         }
     }
-}
-
-@Composable
-fun MomentsViewModel.collectAsState(): State<MomentsState> {
-    return flow.collectAsState(initial = state)
 }

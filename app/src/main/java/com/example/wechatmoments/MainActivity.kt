@@ -4,8 +4,6 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
@@ -42,8 +40,6 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     private fun Content() {
-        Surface(color = MaterialTheme.colors.background) {
-            MomentsScreen()
-        }
+        MomentsScreen()
     }
 }

@@ -1,4 +1,4 @@
-package com.example.wechatmoments.core_kit.network
+package com.example.wechatmoments.service.network
 
 import android.util.Log
 import java.io.IOException

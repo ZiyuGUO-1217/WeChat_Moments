@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
@@ -41,12 +40,13 @@ import coil.compose.ImagePainter
 import coil.compose.rememberImagePainter
 import com.example.wechatmoments.MomentsViewModel
 import com.example.wechatmoments.R
-import com.example.wechatmoments.collectAsState
 import com.example.wechatmoments.model.Comment
 import com.example.wechatmoments.model.Image
+import com.example.wechatmoments.model.MomentsAction
 import com.example.wechatmoments.model.Sender
 import com.example.wechatmoments.model.Tweet
 import com.example.wechatmoments.model.UserInfo
+import com.example.wechatmoments.service.viewmodel.collectAsState
 import com.example.wechatmoments.ui.theme.Shapes
 import com.example.wechatmoments.ui.theme.WeChatMomentsTheme
 import com.example.wechatmoments.ui.weight.AnnotatedClickableText
@@ -55,37 +55,66 @@ import com.example.wechatmoments.ui.weight.MomentsTopBar
 import com.example.wechatmoments.ui.weight.MultiLineStateText
 import com.google.accompanist.insets.statusBarsPadding
 import com.google.accompanist.placeholder.placeholder
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 
 private val MOMENTS_HEADER_HEIGHT = 320.dp
 private val USER_AVATAR_SIZE = 80.dp
 private val USER_PROFILE_BOTTOM_OFFSET = 28.dp
+private val SWIPE_TO_REFRESH_THRESHOLD = 48.dp
 
 @Composable
 fun MomentsScreen(viewModel: MomentsViewModel = hiltViewModel()) {
     val state by viewModel.collectAsState()
+    val actor = viewModel::dispatch
     val lazyListState = rememberLazyListState()
+    val swipeRefreshState = rememberSwipeRefreshState(state.isRefreshing)
 
     val topBarAlpha = remember { mutableStateOf(0f) }
     val isHeaderVisible = lazyListState.firstVisibleItemIndex == 0
     topBarAlpha.value = calculateAlphaValue(lazyListState.firstVisibleItemScrollOffset, isHeaderVisible)
 
-    Box(
+    SwipeRefresh(
+        state = swipeRefreshState,
         modifier = Modifier
             .statusBarsPadding()
-            .fillMaxSize()
+            .background(Color.DarkGray)
+            .padding(top = calculateScreenYOffset(swipeRefreshState.indicatorOffset)),
+        swipeEnabled = state.isRefreshing.not(),
+        refreshTriggerDistance = SWIPE_TO_REFRESH_THRESHOLD,
+        onRefresh = { actor(MomentsAction.RefreshMoments) }
     ) {
-        LazyColumn(
-            state = lazyListState
-        ) {
-            item { UserProfile(state.userInfo) }
-            item { Spacer(modifier = Modifier.height(20.dp)) }
-            items(state.tweetList) {
-                BasicTweetCell(tweet = it, time = "1 minute ago")
+        Box(modifier = Modifier.background(Color.White)) {
+            LazyColumn(
+                state = lazyListState,
+                modifier = Modifier.offset(y = calculateContentYOffset(swipeRefreshState.indicatorOffset))
+            ) {
+                item { UserProfile(state.userInfo) }
+                item { Spacer(modifier = Modifier.height(20.dp)) }
+                items(state.tweetList) {
+                    BasicTweetCell(tweet = it, time = "1 minute ago")
+                }
             }
+            MomentsTopBar(alpha = topBarAlpha.value)
         }
-        MomentsTopBar(alpha = topBarAlpha.value)
     }
 
+}
+
+@Composable
+private fun calculateScreenYOffset(indicatorOffset: Float): Dp {
+    val density = LocalDensity.current
+    return with(density) {
+        maxOf(indicatorOffset.toDp() - SWIPE_TO_REFRESH_THRESHOLD, 0.dp)
+    }
+}
+
+@Composable
+private fun calculateContentYOffset(indicatorOffset: Float): Dp {
+    val density = LocalDensity.current
+    return with(density) {
+        minOf(indicatorOffset.toDp() - SWIPE_TO_REFRESH_THRESHOLD, 0.dp)
+    }
 }
 
 @Composable
@@ -142,7 +171,7 @@ fun MomentsBackgroundImage(imageUrl: String) {
     Image(
         modifier = Modifier
             .fillMaxWidth()
-            .height(MOMENTS_HEADER_HEIGHT)
+            .height(MOMENTS_HEADER_HEIGHT + SWIPE_TO_REFRESH_THRESHOLD)
             .offset(y = -(USER_PROFILE_BOTTOM_OFFSET))
             .placeholder(
                 visible = (painter.state is ImagePainter.State.Success).not(),

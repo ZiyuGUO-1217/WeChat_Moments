@@ -1,4 +1,4 @@
-package com.example.wechatmoments.core_kit.utils
+package com.example.wechatmoments.service.utils
 
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable

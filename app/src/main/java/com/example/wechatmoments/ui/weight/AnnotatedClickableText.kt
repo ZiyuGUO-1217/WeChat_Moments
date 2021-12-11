@@ -6,7 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.sp
-import com.example.wechatmoments.core_kit.utils.MomentsAnnotationString
+import com.example.wechatmoments.service.utils.MomentsAnnotationString
 
 @Composable
 fun AnnotatedClickableText(
