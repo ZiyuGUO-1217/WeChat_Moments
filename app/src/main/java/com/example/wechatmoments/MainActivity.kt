@@ -5,13 +5,19 @@ import android.os.Bundle
 import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
+import com.example.wechatmoments.service.navigation.MomentScreenRoute
+import com.example.wechatmoments.ui.LoginScreen
 import com.example.wechatmoments.ui.MomentsScreen
 import com.example.wechatmoments.ui.theme.WeChatMomentsTheme
 import com.google.accompanist.insets.ProvideWindowInsets
+import com.google.accompanist.navigation.animation.AnimatedNavHost
+import com.google.accompanist.navigation.animation.composable
+import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -55,8 +61,18 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    @OptIn(ExperimentalAnimationApi::class)
     @Composable
     private fun Content() {
-        MomentsScreen()
+        val navHostController = rememberAnimatedNavController()
+        val startDestination = MomentScreenRoute.Login.route
+        AnimatedNavHost(navController = navHostController, startDestination = startDestination) {
+            composable(route = MomentScreenRoute.Login.route) {
+                LoginScreen(navHostController)
+            }
+            composable(route = MomentScreenRoute.Moments.route) {
+                MomentsScreen(navHostController)
+            }
+        }
     }
 }

@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.ImagePainter
 import coil.compose.rememberImagePainter
@@ -65,7 +66,7 @@ private val SWIPE_TO_REFRESH_THRESHOLD = 56.dp
 private const val BASE_ALPHA_VALUE = 0.3f
 
 @Composable
-fun MomentsScreen(viewModel: MomentsViewModel = hiltViewModel()) {
+fun MomentsScreen(navHostController: NavHostController, viewModel: MomentsViewModel = hiltViewModel()) {
     val state by viewModel.collectAsState()
     val actor = viewModel::dispatch
     val lazyListState = rememberLazyListState()
@@ -82,7 +83,7 @@ fun MomentsScreen(viewModel: MomentsViewModel = hiltViewModel()) {
             .padding(top = calculateTopPadding(swipeRefreshState.indicatorOffset)),
         swipeEnabled = state.isRefreshing.not(),
         refreshTriggerDistance = SWIPE_TO_REFRESH_THRESHOLD,
-        onRefresh = { actor(MomentsAction.RefreshMoments) }
+        onRefresh = { actor(MomentsAction.RefreshTweets) }
     ) {
         Box(modifier = Modifier.background(Color.White)) {
             LazyColumn(

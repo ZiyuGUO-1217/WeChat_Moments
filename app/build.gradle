@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    compileSdk 30
+    compileSdk 31
 
     defaultConfig {
         applicationId "com.example.wechatmoments"
@@ -86,4 +86,5 @@ dependencies {
     implementation "com.google.accompanist:accompanist-insets:0.20.0"
     implementation "com.google.accompanist:accompanist-insets-ui:0.20.0"
     implementation "com.google.accompanist:accompanist-swiperefresh:0.20.0"
+    implementation "com.google.accompanist:accompanist-navigation-animation:0.20.0"
 }
