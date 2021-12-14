@@ -4,11 +4,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.ViewModel
+import kotlin.coroutines.CoroutineContext
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 abstract class BaseViewModel<S, A> : ViewModel() {
-    abstract fun configureInitState(): S
+    protected abstract fun configureInitState(): S
     abstract fun dispatch(action: A)
 
     private val _flow by lazy {
@@ -16,7 +18,7 @@ abstract class BaseViewModel<S, A> : ViewModel() {
     }
 
     val flow by lazy {
-        _flow.asSharedFlow()
+        _flow.asStateFlow()
     }
 
     private var state
@@ -31,6 +33,8 @@ abstract class BaseViewModel<S, A> : ViewModel() {
 }
 
 @Composable
-fun <S, A> BaseViewModel<S, A>.collectAsState(): State<S> {
-    return flow.collectAsState(initial = configureInitState())
+fun <S, A> BaseViewModel<S, A>.collectAsState(
+    context: CoroutineContext = EmptyCoroutineContext
+): State<S> {
+    return flow.collectAsState(context = context)
 }

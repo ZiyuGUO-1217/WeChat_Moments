@@ -53,7 +53,6 @@ import com.example.wechatmoments.ui.weight.AnnotatedClickableText
 import com.example.wechatmoments.ui.weight.ImageGrid
 import com.example.wechatmoments.ui.weight.MomentsTopBar
 import com.example.wechatmoments.ui.weight.MultiLineStateText
-import com.google.accompanist.insets.statusBarsPadding
 import com.google.accompanist.placeholder.placeholder
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
@@ -61,7 +60,9 @@ import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 private val MOMENTS_HEADER_HEIGHT = 320.dp
 private val USER_AVATAR_SIZE = 80.dp
 private val USER_PROFILE_BOTTOM_OFFSET = 28.dp
-private val SWIPE_TO_REFRESH_THRESHOLD = 48.dp
+private val SWIPE_TO_REFRESH_THRESHOLD = 56.dp
+
+private const val BASE_ALPHA_VALUE = 0.3f
 
 @Composable
 fun MomentsScreen(viewModel: MomentsViewModel = hiltViewModel()) {
@@ -77,9 +78,8 @@ fun MomentsScreen(viewModel: MomentsViewModel = hiltViewModel()) {
     SwipeRefresh(
         state = swipeRefreshState,
         modifier = Modifier
-            .statusBarsPadding()
             .background(Color.DarkGray)
-            .padding(top = calculateScreenYOffset(swipeRefreshState.indicatorOffset)),
+            .padding(top = calculateTopPadding(swipeRefreshState.indicatorOffset)),
         swipeEnabled = state.isRefreshing.not(),
         refreshTriggerDistance = SWIPE_TO_REFRESH_THRESHOLD,
         onRefresh = { actor(MomentsAction.RefreshMoments) }
@@ -87,22 +87,20 @@ fun MomentsScreen(viewModel: MomentsViewModel = hiltViewModel()) {
         Box(modifier = Modifier.background(Color.White)) {
             LazyColumn(
                 state = lazyListState,
-                modifier = Modifier.offset(y = calculateContentYOffset(swipeRefreshState.indicatorOffset))
             ) {
-                item { UserProfile(state.userInfo) }
+                item { UserProfile(state.userInfo, calculateContentHeight(swipeRefreshState.indicatorOffset)) }
                 item { Spacer(modifier = Modifier.height(20.dp)) }
                 items(state.tweetList) {
                     BasicTweetCell(tweet = it, time = "1 minute ago")
                 }
             }
-            MomentsTopBar(alpha = topBarAlpha.value)
         }
     }
-
+    MomentsTopBar(alpha = topBarAlpha.value)
 }
 
 @Composable
-private fun calculateScreenYOffset(indicatorOffset: Float): Dp {
+private fun calculateTopPadding(indicatorOffset: Float): Dp {
     val density = LocalDensity.current
     return with(density) {
         maxOf(indicatorOffset.toDp() - SWIPE_TO_REFRESH_THRESHOLD, 0.dp)
@@ -110,10 +108,10 @@ private fun calculateScreenYOffset(indicatorOffset: Float): Dp {
 }
 
 @Composable
-private fun calculateContentYOffset(indicatorOffset: Float): Dp {
+private fun calculateContentHeight(indicatorOffset: Float): Dp {
     val density = LocalDensity.current
     return with(density) {
-        minOf(indicatorOffset.toDp() - SWIPE_TO_REFRESH_THRESHOLD, 0.dp)
+        MOMENTS_HEADER_HEIGHT + minOf(indicatorOffset.toDp(), SWIPE_TO_REFRESH_THRESHOLD)
     }
 }
 
@@ -124,12 +122,12 @@ private fun calculateAlphaValue(
 ): Float {
     val density = LocalDensity.current
     with(density) {
-        val threshold = (MOMENTS_HEADER_HEIGHT - USER_AVATAR_SIZE).toPx()
+        val threshold = (MOMENTS_HEADER_HEIGHT - USER_AVATAR_SIZE - getStatusBarHeight()).toPx()
 
         val scrollOffsetFromThreshold = scrollOffset - threshold
         return when {
             scrollOffsetFromThreshold in 0f..USER_PROFILE_BOTTOM_OFFSET.toPx() -> {
-                scrollOffsetFromThreshold / USER_PROFILE_BOTTOM_OFFSET.toPx() / 2 + 0.5f
+                scrollOffsetFromThreshold / USER_PROFILE_BOTTOM_OFFSET.toPx() * (1- BASE_ALPHA_VALUE) + BASE_ALPHA_VALUE
             }
             isItemVisible && scrollOffsetFromThreshold < 0 -> 0f
             else -> 1f
@@ -138,9 +136,12 @@ private fun calculateAlphaValue(
 }
 
 @Composable
-private fun UserProfile(userInfo: UserInfo) {
+private fun UserProfile(userInfo: UserInfo, profileImageHeight: Dp) {
     Box(modifier = Modifier.fillMaxWidth()) {
-        MomentsBackgroundImage(imageUrl = userInfo.profileImage)
+        MomentsBackgroundImage(
+            imageUrl = userInfo.profileImage,
+            imageHeight = profileImageHeight
+        )
 
         Row(
             modifier = Modifier
@@ -165,13 +166,13 @@ private fun UserProfile(userInfo: UserInfo) {
 
 @OptIn(ExperimentalCoilApi::class)
 @Composable
-fun MomentsBackgroundImage(imageUrl: String) {
+fun MomentsBackgroundImage(imageUrl: String, imageHeight: Dp) {
     val painter = rememberImagePainter(data = imageUrl)
 
     Image(
         modifier = Modifier
             .fillMaxWidth()
-            .height(MOMENTS_HEADER_HEIGHT + SWIPE_TO_REFRESH_THRESHOLD)
+            .height(imageHeight)
             .offset(y = -(USER_PROFILE_BOTTOM_OFFSET))
             .placeholder(
                 visible = (painter.state is ImagePainter.State.Success).not(),

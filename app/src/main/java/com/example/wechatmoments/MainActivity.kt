@@ -1,6 +1,8 @@
 package com.example.wechatmoments
 
+import android.os.Build
 import android.os.Bundle
+import android.view.View
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -18,23 +20,38 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setActivityFullScreen()
 
         setContent {
-            val systemUiController = rememberSystemUiController()
-            val useDarkIcons = isSystemInDarkTheme().not()
-            SideEffect {
-                systemUiController.setStatusBarColor(
-                    color = Color.Transparent,
-                    darkIcons = useDarkIcons,
-                    transformColorForLightContent = { it }
-                )
-            }
-
+            SetTransparentStatusBar()
             WeChatMomentsTheme {
                 ProvideWindowInsets {
                     Content()
                 }
             }
+        }
+    }
+
+    @Composable
+    private fun SetTransparentStatusBar() {
+        val systemUiController = rememberSystemUiController()
+        val useDarkIcons = isSystemInDarkTheme().not()
+        SideEffect {
+            systemUiController.setStatusBarColor(
+                color = Color.Transparent,
+                darkIcons = useDarkIcons,
+                transformColorForLightContent = { it }
+            )
+        }
+    }
+
+    private fun setActivityFullScreen() {
+        window.decorView.apply {
+            var flags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                flags = flags xor View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+            }
+            systemUiVisibility = flags
         }
     }
 

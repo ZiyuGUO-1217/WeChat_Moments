@@ -12,7 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.wechatmoments.R
-import com.example.wechatmoments.ui.theme.clickableWithoutRipple
+import com.example.wechatmoments.ui.clickableWithoutRipple
 import com.example.wechatmoments.ui.theme.tertiaryBlue
 
 private const val DEFAULT_MAX_LINES = 8
