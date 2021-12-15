@@ -1,6 +1,5 @@
 package com.example.wechatmoments
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.wechatmoments.data.MomentsRepository
@@ -15,6 +14,11 @@ import kotlinx.coroutines.launch
 
 sealed interface LoginEvent {
     data class LoginSuccess(val userInfo: UserInfo) : LoginEvent
+    object LoginFailed : LoginEvent
+}
+
+sealed class LoginAction {
+    object Retry : LoginAction()
 }
 
 @HiltViewModel
@@ -30,6 +34,12 @@ class LoginViewModel @Inject constructor(
         loadUserInfo()
     }
 
+    fun dispatch(action: LoginAction) {
+        when (action) {
+            LoginAction.Retry -> loadUserInfo()
+        }
+    }
+
     private fun loadUserInfo() {
         viewModelScope.launch {
             repository.getUserInfo(userName)
@@ -37,9 +47,8 @@ class LoginViewModel @Inject constructor(
                     _events.emit(LoginEvent.LoginSuccess(userInfo))
                 }
                 .onError {
-                    Log.d("userInfo: error", "$it")
+                    _events.emit(LoginEvent.LoginFailed)
                 }
         }
     }
-
 }
