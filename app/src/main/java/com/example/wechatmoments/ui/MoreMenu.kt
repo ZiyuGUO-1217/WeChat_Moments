@@ -33,15 +33,30 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.wechatmoments.R
+import com.example.wechatmoments.model.MomentsAction
 import com.example.wechatmoments.ui.theme.Shapes
 import com.example.wechatmoments.ui.theme.primaryblue
 import com.example.wechatmoments.ui.weight.VerticalDivider
+import com.example.wechatmoments.ui.weight.clickableWithoutRipple
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
-fun RowScope.MoreMenu() {
+fun RowScope.MoreMenu(index: Int, hasLiked: Boolean) {
+    val actor = LocalMomentsActor.current
     var interactionVisible by remember { mutableStateOf(false) }
     val onClick = { interactionVisible = !interactionVisible }
+    val onLikesClick = {
+        actor(MomentsAction.LikeAction(index))
+        interactionVisible = false
+    }
+    val onCommentsClick = {
+        interactionVisible = false
+    }
+    val likesButtonText = if (hasLiked) {
+        stringResource(R.string.moments_tweet_menu_likes_cancel)
+    } else {
+        stringResource(R.string.moments_tweet_menu_likes)
+    }
 
     Row(
         modifier = Modifier
@@ -55,14 +70,14 @@ fun RowScope.MoreMenu() {
             enter = slideInHorizontally(initialOffsetX = { it }),
             exit = slideOutHorizontally(targetOffsetX = { it })
         ) {
-            InteractionMenu()
+            InteractionMenu(onLikesClick, onCommentsClick, likesButtonText)
         }
         MoreButton(onClick)
     }
 }
 
 @Composable
-private fun InteractionMenu() {
+private fun InteractionMenu(onLikesClick: () -> Unit, onCommentsClick: () -> Unit, likesButtonText: String) {
     Card(
         modifier = Modifier.fillMaxHeight(),
         backgroundColor = Color.DarkGray,
@@ -75,33 +90,41 @@ private fun InteractionMenu() {
         ) {
             IconText(
                 iconId = R.drawable.ic_outline_likes,
-                text = stringResource(R.string.moments_tweet_menu_likes)
+                text = likesButtonText,
+                onClick = onLikesClick
             )
             VerticalDivider(Modifier.padding(horizontal = 12.dp))
             IconText(
                 iconId = R.drawable.ic_outline_comments,
-                text = stringResource(R.string.moments_tweet_menu_comments)
+                text = stringResource(R.string.moments_tweet_menu_comments),
+                onClick = onCommentsClick
             )
         }
     }
 }
 
 @Composable
-private fun IconText(iconId: Int, text: String) {
-    Icon(
-        modifier = Modifier
-            .padding(horizontal = 2.dp)
-            .size(12.dp),
-        painter = painterResource(id = iconId),
-        contentDescription = text,
-        tint = Color.White
-    )
-    Text(
-        text = text,
-        color = Color.White,
-        fontSize = 12.sp,
-        style = TextStyle(textDecoration = TextDecoration.Underline)
-    )
+private fun IconText(iconId: Int, text: String, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier.clickableWithoutRipple { onClick() },
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(
+            modifier = Modifier
+                .padding(horizontal = 2.dp)
+                .size(12.dp),
+            painter = painterResource(id = iconId),
+            contentDescription = text,
+            tint = Color.White
+        )
+        Text(
+            text = text,
+            color = Color.White,
+            fontSize = 12.sp,
+            style = TextStyle(textDecoration = TextDecoration.Underline)
+        )
+    }
+
 }
 
 @Composable

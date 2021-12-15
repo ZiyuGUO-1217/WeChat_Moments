@@ -21,7 +21,7 @@ abstract class BaseViewModel<S, A> : ViewModel() {
         _flow.asStateFlow()
     }
 
-    private var state
+    protected var state
         get() = _flow.value
         private set(value) {
             _flow.value = value

@@ -1,4 +1,4 @@
-package com.example.wechatmoments.ui
+package com.example.wechatmoments.ui.weight
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource

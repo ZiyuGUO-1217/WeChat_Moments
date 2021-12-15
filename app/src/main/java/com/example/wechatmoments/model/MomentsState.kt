@@ -3,11 +3,5 @@ package com.example.wechatmoments.model
 data class MomentsState(
     val userInfo: UserInfo = UserInfo(),
     val tweetList: List<Tweet> = emptyList(),
-    val isRefreshing: Boolean = false,
-    val screenContent: ScreenContent = ScreenContent.LOGIN
+    val isRefreshing: Boolean = false
 )
-
-enum class ScreenContent {
-    LOGIN,
-    MOMENTS
-}

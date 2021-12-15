@@ -1,6 +1,5 @@
 package com.example.wechatmoments.ui
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -13,12 +12,13 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,19 +41,19 @@ import coil.compose.ImagePainter
 import coil.compose.rememberImagePainter
 import com.example.wechatmoments.MomentsViewModel
 import com.example.wechatmoments.R
-import com.example.wechatmoments.model.Comment
 import com.example.wechatmoments.model.Image
 import com.example.wechatmoments.model.MomentsAction
+import com.example.wechatmoments.model.MomentsState
 import com.example.wechatmoments.model.Sender
 import com.example.wechatmoments.model.Tweet
 import com.example.wechatmoments.model.UserInfo
 import com.example.wechatmoments.service.viewmodel.collectAsState
 import com.example.wechatmoments.ui.theme.Shapes
 import com.example.wechatmoments.ui.theme.WeChatMomentsTheme
-import com.example.wechatmoments.ui.weight.AnnotatedClickableText
 import com.example.wechatmoments.ui.weight.ImageGrid
 import com.example.wechatmoments.ui.weight.MomentsTopBar
 import com.example.wechatmoments.ui.weight.MultiLineStateText
+import com.example.wechatmoments.ui.weight.getStatusBarHeight
 import com.google.accompanist.placeholder.placeholder
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
@@ -65,10 +65,21 @@ private val SWIPE_TO_REFRESH_THRESHOLD = 56.dp
 
 private const val BASE_ALPHA_VALUE = 0.3f
 
+val LocalMomentsActor = compositionLocalOf<(MomentsAction) -> Unit> { error("not provided") }
+
 @Composable
 fun MomentsScreen(navHostController: NavHostController, viewModel: MomentsViewModel = hiltViewModel()) {
     val state by viewModel.collectAsState()
     val actor = viewModel::dispatch
+
+    CompositionLocalProvider(LocalMomentsActor provides actor) {
+        MomentsScreenContent(state)
+    }
+}
+
+@Composable
+private fun MomentsScreenContent(state: MomentsState) {
+    val actor = LocalMomentsActor.current
     val lazyListState = rememberLazyListState()
     val swipeRefreshState = rememberSwipeRefreshState(state.isRefreshing)
 
@@ -91,8 +102,8 @@ fun MomentsScreen(navHostController: NavHostController, viewModel: MomentsViewMo
             ) {
                 item { UserProfile(state.userInfo, calculateContentHeight(swipeRefreshState.indicatorOffset)) }
                 item { Spacer(modifier = Modifier.height(20.dp)) }
-                items(state.tweetList) {
-                    BasicTweetCell(tweet = it, time = "1 minute ago")
+                itemsIndexed(state.tweetList) { index, tweet ->
+                    BasicTweetCell(index = index, userName = state.userInfo.userName, tweet = tweet)
                 }
             }
         }
@@ -128,7 +139,7 @@ private fun calculateAlphaValue(
         val scrollOffsetFromThreshold = scrollOffset - threshold
         return when {
             scrollOffsetFromThreshold in 0f..USER_PROFILE_BOTTOM_OFFSET.toPx() -> {
-                scrollOffsetFromThreshold / USER_PROFILE_BOTTOM_OFFSET.toPx() * (1- BASE_ALPHA_VALUE) + BASE_ALPHA_VALUE
+                scrollOffsetFromThreshold / USER_PROFILE_BOTTOM_OFFSET.toPx() * (1 - BASE_ALPHA_VALUE) + BASE_ALPHA_VALUE
             }
             isItemVisible && scrollOffsetFromThreshold < 0 -> 0f
             else -> 1f
@@ -186,15 +197,15 @@ fun MomentsBackgroundImage(imageUrl: String, imageHeight: Dp) {
 }
 
 @Composable
-fun BasicTweetCell(tweet: Tweet, time: String) {
+fun BasicTweetCell(index: Int, userName: String, tweet: Tweet) {
     Column {
-        CellContent(tweet, time)
+        CellContent(index, tweet, userName)
         Divider(modifier = Modifier.fillMaxWidth(), color = Color.LightGray.copy(alpha = 0.5f))
     }
 }
 
 @Composable
-private fun CellContent(tweet: Tweet, time: String) {
+private fun CellContent(index: Int, tweet: Tweet, userName: String) {
     Row(
         modifier = Modifier
             .padding(horizontal = 16.dp)
@@ -203,13 +214,7 @@ private fun CellContent(tweet: Tweet, time: String) {
         verticalAlignment = Alignment.Top
     ) {
         AvatarImage(imageUrl = tweet.sender.avatar)
-        TweetDetails(
-            userName = tweet.sender.nickName,
-            tweetContent = tweet.content,
-            imageList = tweet.images,
-            comments = tweet.comments,
-            time = time
-        )
+        TweetDetails(index, tweet, userName)
     }
 }
 
@@ -239,19 +244,13 @@ private fun AvatarImage(
 }
 
 @Composable
-private fun TweetDetails(
-    userName: String,
-    tweetContent: String,
-    imageList: List<Image>,
-    comments: List<Comment>,
-    time: String
-) {
+private fun TweetDetails(index: Int, tweet: Tweet, userName: String) {
     Column(modifier = Modifier.padding(start = 12.dp)) {
-        UserName(userName)
-        if (tweetContent.isNotBlank()) TweetContent(tweetContent)
-        if (imageList.isNotEmpty()) ImageGrid(Modifier.padding(top = 8.dp), imageList)
-        TimeAndMore(time)
-        if (comments.isNotEmpty()) TweetComments(comments)
+        UserName(tweet.sender.nickName)
+        if (tweet.content.isNotBlank()) TweetContent(tweet.content)
+        if (tweet.images.isNotEmpty()) ImageGrid(Modifier.padding(top = 8.dp), tweet.images)
+        TimeAndMore(tweet, index, userName)
+        if (tweet.comments.isNotEmpty() || tweet.likes.isNotEmpty()) TweetComments(tweet.likes, tweet.comments)
     }
 }
 
@@ -272,36 +271,7 @@ private fun TweetContent(tweetContent: String) {
 }
 
 @Composable
-fun TweetComments(comments: List<Comment>) {
-    val commentsNumber = comments.size
-
-    Column(
-        modifier = Modifier
-            .padding(top = 4.dp, bottom = 16.dp)
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(2.dp))
-            .background(Color.LightGray.copy(alpha = 0.25f))
-            .padding(all = 4.dp)
-    ) {
-        comments.forEachIndexed { index, comment ->
-            TweetComment(comment)
-            if (index + 1 != commentsNumber) Spacer(modifier = Modifier.height(4.dp))
-        }
-    }
-}
-
-@Composable
-fun TweetComment(comment: Comment) {
-    AnnotatedClickableText {
-        appendAnnotatedText(text = comment.sender.nickName, annotation = "nick name") {
-            Log.d("comments", "nick name clicked!")
-        }
-        appendPlainText(text = ": " + comment.content)
-    }
-}
-
-@Composable
-private fun TimeAndMore(time: String) {
+private fun TimeAndMore(tweet: Tweet, index: Int, userName: String) {
     val modifier = Modifier.padding(vertical = 8.dp)
 
     Row(
@@ -312,11 +282,11 @@ private fun TimeAndMore(time: String) {
     ) {
         Text(
             modifier = modifier.padding(end = 8.dp),
-            text = time,
+            text = tweet.sendTime,
             color = Color.Gray,
             fontSize = 13.sp
         )
-        MoreMenu()
+        MoreMenu(index, tweet.containsUser(userName))
     }
 }
 
@@ -325,6 +295,8 @@ private fun TimeAndMore(time: String) {
 fun BasicTweetCellPreview() {
     WeChatMomentsTheme {
         BasicTweetCell(
+            index = 0,
+            userName = "userName",
             tweet = Tweet(
                 content = "This is the first tweet",
                 sender = Sender(
@@ -337,8 +309,7 @@ fun BasicTweetCellPreview() {
                     Image(url = "fake"),
                     Image(url = "fake")
                 )
-            ),
-            time = "1 day ago"
+            )
         )
     }
 }
