@@ -4,6 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -130,12 +131,12 @@ private fun MomentsScreenContent(
             .padding(top = calculateTopPadding(swipeRefreshState.indicatorOffset)),
         swipeEnabled = state.isRefreshing.not(),
         refreshTriggerDistance = SWIPE_TO_REFRESH_THRESHOLD,
+        indicatorPadding = PaddingValues(start = 32.dp),
+        indicatorAlignment = Alignment.TopStart,
         onRefresh = { actor(MomentsAction.RefreshTweets) }
     ) {
         Box(modifier = Modifier.background(Color.White)) {
-            LazyColumn(
-                state = lazyListState,
-            ) {
+            LazyColumn(state = lazyListState) {
                 item { UserProfile(state.userInfo, calculateContentHeight(swipeRefreshState.indicatorOffset)) }
                 item { Spacer(modifier = Modifier.height(20.dp)) }
                 itemsIndexed(state.tweetList) { index, tweet ->

@@ -59,19 +59,21 @@ class MomentsViewModel @Inject constructor(
     }
 
     private fun leaveComment(commentContent: String) {
-        val tweet = state.tweetList[targetTweetIndex]
-        val sender = with(state.userInfo) {
-            Sender(userName = userName, nickName = nickName, avatar = avatar)
-        }
-        val comments = tweet.comments.toMutableList().apply {
-            add(Comment(content = commentContent, sender = sender))
-        }
-        val tweetList = state.tweetList.toMutableList().apply {
-            set(targetTweetIndex, tweet.copy(comments = comments))
-        }
+        if (targetTweetIndex >= 0) {
+            val tweet = state.tweetList[targetTweetIndex]
+            val sender = with(state.userInfo) {
+                Sender(userName = userName, nickName = nickName, avatar = avatar)
+            }
+            val comments = tweet.comments.toMutableList().apply {
+                add(Comment(content = commentContent, sender = sender))
+            }
+            val tweetList = state.tweetList.toMutableList().apply {
+                set(targetTweetIndex, tweet.copy(comments = comments))
+            }
 
-        updateState {
-            copy(tweetList = tweetList)
+            updateState {
+                copy(tweetList = tweetList)
+            }
         }
     }
 
