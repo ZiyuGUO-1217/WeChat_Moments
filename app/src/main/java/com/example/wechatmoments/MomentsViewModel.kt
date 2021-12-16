@@ -4,8 +4,8 @@ import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import com.example.wechatmoments.data.MomentsRepository
+import com.example.wechatmoments.model.Comment
 import com.example.wechatmoments.model.MomentsAction
-import com.example.wechatmoments.model.MomentsEvent
 import com.example.wechatmoments.model.MomentsState
 import com.example.wechatmoments.model.Sender
 import com.example.wechatmoments.model.Tweet
@@ -20,6 +20,10 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 
+sealed interface MomentsEvent {
+    object OpenInputField : MomentsEvent
+}
+
 @HiltViewModel
 class MomentsViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
@@ -29,6 +33,7 @@ class MomentsViewModel @Inject constructor(
     val event = _events.asSharedFlow()
 
     private val userName = "jsmith"
+    private var targetTweetIndex: Int = -1
 
     override fun configureInitState(): MomentsState {
         val profileImage = savedStateHandle.get<String>(MomentScreenRoute.Moments.KEY_PROFILE_IMAGE)!!
@@ -48,6 +53,32 @@ class MomentsViewModel @Inject constructor(
         when (action) {
             MomentsAction.RefreshTweets -> loadTweetsList()
             is MomentsAction.LikeAction -> handleLikeAction(action.index)
+            is MomentsAction.OpenCommentInputField -> openCommentInputField(action.index)
+            is MomentsAction.LeaveComment -> leaveComment(action.comment)
+        }
+    }
+
+    private fun leaveComment(commentContent: String) {
+        val tweet = state.tweetList[targetTweetIndex]
+        val sender = with(state.userInfo) {
+            Sender(userName = userName, nickName = nickName, avatar = avatar)
+        }
+        val comments = tweet.comments.toMutableList().apply {
+            add(Comment(content = commentContent, sender = sender))
+        }
+        val tweetList = state.tweetList.toMutableList().apply {
+            set(targetTweetIndex, tweet.copy(comments = comments))
+        }
+
+        updateState {
+            copy(tweetList = tweetList)
+        }
+    }
+
+    private fun openCommentInputField(index: Int) {
+        targetTweetIndex = index
+        viewModelScope.launch {
+            _events.emit(MomentsEvent.OpenInputField)
         }
     }
 

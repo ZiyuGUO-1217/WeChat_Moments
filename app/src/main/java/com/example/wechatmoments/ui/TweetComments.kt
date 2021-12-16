@@ -1,6 +1,7 @@
 package com.example.wechatmoments.ui
 
 import android.util.Log
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -39,6 +40,7 @@ fun TweetComments(likes: List<Sender>, comments: List<Comment>) {
             .clip(RoundedCornerShape(2.dp))
             .background(Color.LightGray.copy(alpha = 0.25f))
             .padding(all = 4.dp)
+            .animateContentSize()
     ) {
         if (likes.isNotEmpty()) LikesField(likes)
         if (likes.isNotEmpty() && comments.isNotEmpty()) {
@@ -59,7 +61,9 @@ fun TweetComments(likes: List<Sender>, comments: List<Comment>) {
 @Composable
 private fun LikesField(likes: List<Sender>) {
     FlowRow(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .animateContentSize(),
         mainAxisAlignment = MainAxisAlignment.Center,
         crossAxisAlignment = FlowCrossAxisAlignment.Center,
         lastLineMainAxisAlignment = MainAxisAlignment.Start,

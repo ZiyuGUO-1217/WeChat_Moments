@@ -12,12 +12,15 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.Divider
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -34,11 +37,10 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavHostController
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.ImagePainter
 import coil.compose.rememberImagePainter
+import com.example.wechatmoments.MomentsEvent
 import com.example.wechatmoments.MomentsViewModel
 import com.example.wechatmoments.R
 import com.example.wechatmoments.model.Image
@@ -53,10 +55,15 @@ import com.example.wechatmoments.ui.theme.WeChatMomentsTheme
 import com.example.wechatmoments.ui.weight.ImageGrid
 import com.example.wechatmoments.ui.weight.MomentsTopBar
 import com.example.wechatmoments.ui.weight.MultiLineStateText
+import com.example.wechatmoments.ui.weight.bringIntoViewAfterImeAnimation
+import com.example.wechatmoments.ui.weight.clickableWithoutRipple
 import com.example.wechatmoments.ui.weight.getStatusBarHeight
+import com.google.accompanist.insets.navigationBarsWithImePadding
 import com.google.accompanist.placeholder.placeholder
 import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.SwipeRefreshState
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+import kotlinx.coroutines.flow.collect
 
 private val MOMENTS_HEADER_HEIGHT = 320.dp
 private val USER_AVATAR_SIZE = 80.dp
@@ -68,20 +75,49 @@ private const val BASE_ALPHA_VALUE = 0.3f
 val LocalMomentsActor = compositionLocalOf<(MomentsAction) -> Unit> { error("not provided") }
 
 @Composable
-fun MomentsScreen(navHostController: NavHostController, viewModel: MomentsViewModel = hiltViewModel()) {
+fun MomentsScreen(viewModel: MomentsViewModel = hiltViewModel()) {
     val state by viewModel.collectAsState()
     val actor = viewModel::dispatch
+    val lazyListState = rememberLazyListState()
+    val swipeRefreshState = rememberSwipeRefreshState(state.isRefreshing)
+    val commentInputFieldShowingState = remember { mutableStateOf(false) }
 
+    UiEffects(viewModel, commentInputFieldShowingState)
+
+    val closeInputField = { commentInputFieldShowingState.value = false }
     CompositionLocalProvider(LocalMomentsActor provides actor) {
-        MomentsScreenContent(state)
+        Box(
+            modifier = Modifier
+                .navigationBarsWithImePadding()
+                .clickableWithoutRipple(closeInputField),
+        ) {
+            MomentsScreenContent(state, lazyListState, swipeRefreshState)
+            if (commentInputFieldShowingState.value) CommentInputField(closeInputField)
+        }
     }
 }
 
 @Composable
-private fun MomentsScreenContent(state: MomentsState) {
+private fun UiEffects(
+    viewModel: MomentsViewModel,
+    commentInputFieldShowingState: MutableState<Boolean>,
+) {
+    LaunchedEffect(Unit) {
+        viewModel.event.collect { event ->
+            when (event) {
+                is MomentsEvent.OpenInputField -> commentInputFieldShowingState.value = true
+            }
+        }
+    }
+}
+
+@Composable
+private fun MomentsScreenContent(
+    state: MomentsState,
+    lazyListState: LazyListState,
+    swipeRefreshState: SwipeRefreshState
+) {
     val actor = LocalMomentsActor.current
-    val lazyListState = rememberLazyListState()
-    val swipeRefreshState = rememberSwipeRefreshState(state.isRefreshing)
 
     val topBarAlpha = remember { mutableStateOf(0f) }
     val isHeaderVisible = lazyListState.firstVisibleItemIndex == 0
@@ -200,7 +236,12 @@ fun MomentsBackgroundImage(imageUrl: String, imageHeight: Dp) {
 fun BasicTweetCell(index: Int, userName: String, tweet: Tweet) {
     Column {
         CellContent(index, tweet, userName)
-        Divider(modifier = Modifier.fillMaxWidth(), color = Color.LightGray.copy(alpha = 0.5f))
+        Divider(
+            modifier = Modifier
+                .fillMaxWidth()
+                .bringIntoViewAfterImeAnimation(),
+            color = Color.LightGray.copy(alpha = 0.5f)
+        )
     }
 }
 
@@ -318,6 +359,6 @@ fun BasicTweetCellPreview() {
 @Composable
 fun MomentsScreenPreview() {
     WeChatMomentsTheme {
-        MomentsScreen(viewModel())
+        MomentsScreen()
     }
 }

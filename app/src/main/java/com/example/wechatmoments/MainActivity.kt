@@ -10,6 +10,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
+import androidx.core.view.WindowCompat
 import com.example.wechatmoments.service.navigation.MomentScreenRoute
 import com.example.wechatmoments.ui.LoginScreen
 import com.example.wechatmoments.ui.MomentsScreen
@@ -52,6 +53,7 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun setActivityFullScreen() {
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         window.decorView.apply {
             var flags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -71,7 +73,7 @@ class MainActivity : ComponentActivity() {
                 LoginScreen(navHostController)
             }
             composable(route = MomentScreenRoute.Moments.route) {
-                MomentsScreen(navHostController)
+                MomentsScreen()
             }
         }
     }

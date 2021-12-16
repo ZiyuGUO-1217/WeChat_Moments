@@ -50,6 +50,7 @@ fun RowScope.MoreMenu(index: Int, hasLiked: Boolean) {
         interactionVisible = false
     }
     val onCommentsClick = {
+        actor(MomentsAction.OpenCommentInputField(index))
         interactionVisible = false
     }
     val likesButtonText = if (hasLiked) {
