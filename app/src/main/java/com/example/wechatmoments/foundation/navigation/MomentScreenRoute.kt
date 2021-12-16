@@ -1,4 +1,4 @@
-package com.example.wechatmoments.service.navigation
+package com.example.wechatmoments.foundation.navigation
 
 import androidx.navigation.NavHostController
 import com.example.wechatmoments.model.UserInfo

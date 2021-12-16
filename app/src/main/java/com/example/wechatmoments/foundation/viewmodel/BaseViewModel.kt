@@ -1,4 +1,4 @@
-package com.example.wechatmoments.service.viewmodel
+package com.example.wechatmoments.foundation.viewmodel
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State

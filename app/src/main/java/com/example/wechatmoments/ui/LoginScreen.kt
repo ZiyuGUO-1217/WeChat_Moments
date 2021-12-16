@@ -16,7 +16,7 @@ import com.example.wechatmoments.LoginAction
 import com.example.wechatmoments.LoginEvent
 import com.example.wechatmoments.LoginViewModel
 import com.example.wechatmoments.R
-import com.example.wechatmoments.service.navigation.MomentScreenRoute
+import com.example.wechatmoments.foundation.navigation.MomentScreenRoute
 import com.example.wechatmoments.ui.weight.MomentsDialog
 import com.example.wechatmoments.ui.weight.MomentsDialogState
 import kotlinx.coroutines.flow.collect

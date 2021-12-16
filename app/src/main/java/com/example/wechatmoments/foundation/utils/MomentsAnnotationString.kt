@@ -1,4 +1,4 @@
-package com.example.wechatmoments.service.utils
+package com.example.wechatmoments.foundation.utils
 
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable

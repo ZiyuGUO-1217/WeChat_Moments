@@ -1,4 +1,4 @@
-package com.example.wechatmoments.service.navigation
+package com.example.wechatmoments.foundation.navigation
 
 import android.net.Uri
 import androidx.navigation.NavArgument

@@ -11,7 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
 import androidx.core.view.WindowCompat
-import com.example.wechatmoments.service.navigation.MomentScreenRoute
+import com.example.wechatmoments.foundation.navigation.MomentScreenRoute
 import com.example.wechatmoments.ui.LoginScreen
 import com.example.wechatmoments.ui.MomentsScreen
 import com.example.wechatmoments.ui.theme.WeChatMomentsTheme

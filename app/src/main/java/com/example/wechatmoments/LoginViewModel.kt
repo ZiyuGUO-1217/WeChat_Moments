@@ -3,9 +3,9 @@ package com.example.wechatmoments
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.wechatmoments.data.MomentsRepository
+import com.example.wechatmoments.foundation.network.onError
+import com.example.wechatmoments.foundation.network.onSuccess
 import com.example.wechatmoments.model.UserInfo
-import com.example.wechatmoments.service.network.onError
-import com.example.wechatmoments.service.network.onSuccess
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableSharedFlow

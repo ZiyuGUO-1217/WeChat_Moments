@@ -44,13 +44,13 @@ import coil.compose.rememberImagePainter
 import com.example.wechatmoments.MomentsEvent
 import com.example.wechatmoments.MomentsViewModel
 import com.example.wechatmoments.R
+import com.example.wechatmoments.foundation.viewmodel.collectAsState
 import com.example.wechatmoments.model.Image
 import com.example.wechatmoments.model.MomentsAction
 import com.example.wechatmoments.model.MomentsState
 import com.example.wechatmoments.model.Sender
 import com.example.wechatmoments.model.Tweet
 import com.example.wechatmoments.model.UserInfo
-import com.example.wechatmoments.service.viewmodel.collectAsState
 import com.example.wechatmoments.ui.theme.Shapes
 import com.example.wechatmoments.ui.theme.WeChatMomentsTheme
 import com.example.wechatmoments.ui.weight.ImageGrid

@@ -1,9 +1,9 @@
 package com.example.wechatmoments.data
 
+import com.example.wechatmoments.foundation.network.ApiResult
+import com.example.wechatmoments.foundation.network.callApi
 import com.example.wechatmoments.model.Tweet
 import com.example.wechatmoments.model.UserInfo
-import com.example.wechatmoments.service.network.ApiResult
-import com.example.wechatmoments.service.network.callApi
 import javax.inject.Inject
 
 class MomentsRepository @Inject constructor(
