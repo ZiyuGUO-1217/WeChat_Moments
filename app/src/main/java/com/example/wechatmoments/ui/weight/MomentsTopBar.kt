@@ -18,8 +18,10 @@ import androidx.compose.ui.unit.dp
 import com.example.wechatmoments.R
 import com.google.accompanist.insets.statusBarsPadding
 
+val MOMENTS_TOP_BAR_HEIGHT = 86.dp
+
 @Composable
-fun MomentsTopBar(alpha: Float) {
+fun MomentsTopBar(alpha: Float, modifier: Modifier = Modifier) {
     val iconColor = if (alpha > 0.5f) Color.Black else Color.White
     val cameraIconId = if (alpha > 0.5f) R.drawable.ic_outline_camera else R.drawable.ic_baseline_camera
 
@@ -27,7 +29,7 @@ fun MomentsTopBar(alpha: Float) {
         title = {
             Text(
                 text = stringResource(R.string.moments_top_bar_title),
-                modifier = Modifier
+                modifier = modifier
                     .fillMaxWidth()
                     .alpha(alpha),
                 textAlign = TextAlign.Center

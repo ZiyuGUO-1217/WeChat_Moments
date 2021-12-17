@@ -22,6 +22,7 @@ import kotlinx.coroutines.launch
 
 sealed interface MomentsEvent {
     object OpenInputField : MomentsEvent
+    data class ScrollToItem(val index: Int):MomentsEvent
 }
 
 @HiltViewModel
@@ -81,6 +82,7 @@ class MomentsViewModel @Inject constructor(
         targetTweetIndex = index
         viewModelScope.launch {
             _events.emit(MomentsEvent.OpenInputField)
+            _events.emit(MomentsEvent.ScrollToItem(index))
         }
     }
 

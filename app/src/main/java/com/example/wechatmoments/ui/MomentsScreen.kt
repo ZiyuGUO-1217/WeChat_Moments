@@ -2,6 +2,7 @@ package com.example.wechatmoments.ui
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -53,10 +54,11 @@ import com.example.wechatmoments.model.Tweet
 import com.example.wechatmoments.model.UserInfo
 import com.example.wechatmoments.ui.theme.Shapes
 import com.example.wechatmoments.ui.theme.WeChatMomentsTheme
+import com.example.wechatmoments.ui.weight.CommentInputField
 import com.example.wechatmoments.ui.weight.ImageGrid
+import com.example.wechatmoments.ui.weight.MOMENTS_TOP_BAR_HEIGHT
 import com.example.wechatmoments.ui.weight.MomentsTopBar
 import com.example.wechatmoments.ui.weight.MultiLineStateText
-import com.example.wechatmoments.ui.weight.bringIntoViewAfterImeAnimation
 import com.example.wechatmoments.ui.weight.clickableWithoutRipple
 import com.example.wechatmoments.ui.weight.getStatusBarHeight
 import com.google.accompanist.insets.navigationBarsWithImePadding
@@ -64,7 +66,9 @@ import com.google.accompanist.placeholder.placeholder
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.SwipeRefreshState
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 
 private val MOMENTS_HEADER_HEIGHT = 320.dp
 private val USER_AVATAR_SIZE = 80.dp
@@ -83,7 +87,7 @@ fun MomentsScreen(viewModel: MomentsViewModel = hiltViewModel()) {
     val swipeRefreshState = rememberSwipeRefreshState(state.isRefreshing)
     val commentInputFieldShowingState = remember { mutableStateOf(false) }
 
-    UiEffects(viewModel, commentInputFieldShowingState)
+    UiEffects(viewModel, commentInputFieldShowingState, lazyListState)
 
     val closeInputField = { commentInputFieldShowingState.value = false }
     CompositionLocalProvider(LocalMomentsActor provides actor) {
@@ -102,11 +106,19 @@ fun MomentsScreen(viewModel: MomentsViewModel = hiltViewModel()) {
 private fun UiEffects(
     viewModel: MomentsViewModel,
     commentInputFieldShowingState: MutableState<Boolean>,
+    lazyListState: LazyListState
 ) {
+    val density = LocalDensity.current
+    val topBarHeight = with(density) { MOMENTS_TOP_BAR_HEIGHT.toPx() }
     LaunchedEffect(Unit) {
         viewModel.event.collect { event ->
             when (event) {
                 is MomentsEvent.OpenInputField -> commentInputFieldShowingState.value = true
+                is MomentsEvent.ScrollToItem -> launch {
+                    val scrollOffset = getScrollOffset(lazyListState, event.index, topBarHeight)
+                    delay(500L)
+                    lazyListState.animateScrollBy(scrollOffset)
+                }
             }
         }
     }
@@ -146,42 +158,6 @@ private fun MomentsScreenContent(
         }
     }
     MomentsTopBar(alpha = topBarAlpha.value)
-}
-
-@Composable
-private fun calculateTopPadding(indicatorOffset: Float): Dp {
-    val density = LocalDensity.current
-    return with(density) {
-        maxOf(indicatorOffset.toDp() - SWIPE_TO_REFRESH_THRESHOLD, 0.dp)
-    }
-}
-
-@Composable
-private fun calculateContentHeight(indicatorOffset: Float): Dp {
-    val density = LocalDensity.current
-    return with(density) {
-        MOMENTS_HEADER_HEIGHT + minOf(indicatorOffset.toDp(), SWIPE_TO_REFRESH_THRESHOLD)
-    }
-}
-
-@Composable
-private fun calculateAlphaValue(
-    scrollOffset: Int,
-    isItemVisible: Boolean
-): Float {
-    val density = LocalDensity.current
-    with(density) {
-        val threshold = (MOMENTS_HEADER_HEIGHT - USER_AVATAR_SIZE - getStatusBarHeight()).toPx()
-
-        val scrollOffsetFromThreshold = scrollOffset - threshold
-        return when {
-            scrollOffsetFromThreshold in 0f..USER_PROFILE_BOTTOM_OFFSET.toPx() -> {
-                scrollOffsetFromThreshold / USER_PROFILE_BOTTOM_OFFSET.toPx() * (1 - BASE_ALPHA_VALUE) + BASE_ALPHA_VALUE
-            }
-            isItemVisible && scrollOffsetFromThreshold < 0 -> 0f
-            else -> 1f
-        }
-    }
 }
 
 @Composable
@@ -238,9 +214,7 @@ fun BasicTweetCell(index: Int, userName: String, tweet: Tweet) {
     Column {
         CellContent(index, tweet, userName)
         Divider(
-            modifier = Modifier
-                .fillMaxWidth()
-                .bringIntoViewAfterImeAnimation(),
+            modifier = Modifier.fillMaxWidth(),
             color = Color.LightGray.copy(alpha = 0.5f)
         )
     }
@@ -329,6 +303,51 @@ private fun TimeAndMore(tweet: Tweet, index: Int, userName: String) {
             fontSize = 13.sp
         )
         MoreMenu(index, tweet.containsUser(userName))
+    }
+}
+
+private fun getScrollOffset(
+    lazyListState: LazyListState,
+    targetIndex: Int,
+    topBarHeight: Float
+) = lazyListState.layoutInfo.visibleItemsInfo.find { it.index == targetIndex + 2 }?.offset.run {
+    if (this == null) return@run 0f else this - topBarHeight
+}
+
+@Composable
+private fun calculateTopPadding(indicatorOffset: Float): Dp {
+    val density = LocalDensity.current
+    return with(density) {
+        maxOf(indicatorOffset.toDp() - SWIPE_TO_REFRESH_THRESHOLD, 0.dp)
+    }
+}
+
+@Composable
+private fun calculateContentHeight(indicatorOffset: Float): Dp {
+    val density = LocalDensity.current
+    return with(density) {
+        MOMENTS_HEADER_HEIGHT + minOf(indicatorOffset.toDp(), SWIPE_TO_REFRESH_THRESHOLD)
+    }
+}
+
+@Composable
+private fun calculateAlphaValue(
+    scrollOffset: Int,
+    isItemVisible: Boolean
+): Float {
+    val density = LocalDensity.current
+    with(density) {
+        val threshold = (MOMENTS_HEADER_HEIGHT - USER_AVATAR_SIZE - getStatusBarHeight()).toPx()
+
+        val scrollOffsetFromThreshold = scrollOffset - threshold
+        return when {
+            isItemVisible && scrollOffsetFromThreshold < 0 -> 0f
+            isItemVisible.not() -> 1f
+            scrollOffsetFromThreshold in 0f..USER_PROFILE_BOTTOM_OFFSET.toPx() -> {
+                scrollOffsetFromThreshold / USER_PROFILE_BOTTOM_OFFSET.toPx() * (1 - BASE_ALPHA_VALUE) + BASE_ALPHA_VALUE
+            }
+            else -> 1f
+        }
     }
 }
 

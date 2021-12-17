@@ -17,7 +17,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.insets.LocalWindowInsets
-import kotlinx.coroutines.delay
 
 fun Modifier.clickableWithoutRipple(onClick: () -> Unit) = composed {
     this.clickable(
@@ -34,9 +33,8 @@ fun Modifier.bringIntoViewAfterImeAnimation() = composed {
     val isFocused by interactionSource.collectIsFocusedAsState()
     val relocationRequester = remember { RelocationRequester() }
 
-    if (imeInsets.isVisible && imeInsets.animationInProgress.not() && isFocused) {
-        LaunchedEffect(Unit) {
-            delay(100L)
+    LaunchedEffect(imeInsets.isVisible, imeInsets.animationInProgress, relocationRequester, isFocused) {
+        if (imeInsets.isVisible && imeInsets.animationInProgress.not() && isFocused) {
             relocationRequester.bringIntoView()
         }
     }

@@ -1,5 +1,6 @@
-package com.example.wechatmoments.ui
+package com.example.wechatmoments.ui.weight
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Row
@@ -21,7 +22,9 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.wechatmoments.model.MomentsAction
+import com.example.wechatmoments.ui.LocalMomentsActor
 import com.example.wechatmoments.ui.theme.Shapes
+import kotlinx.coroutines.delay
 
 @Composable
 fun BoxScope.CommentInputField(closeInputField: () -> Unit) {
@@ -35,6 +38,7 @@ fun BoxScope.CommentInputField(closeInputField: () -> Unit) {
             .align(Alignment.BottomCenter)
             .fillMaxWidth()
             .background(Color(0xFFEEEEEE))
+            .animateContentSize()
             .padding(horizontal = 8.dp, vertical = 4.dp),
         verticalAlignment = Alignment.Bottom
     ) {
@@ -63,6 +67,7 @@ fun BoxScope.CommentInputField(closeInputField: () -> Unit) {
     }
 
     LaunchedEffect(focusRequester) {
+        delay(100L)
         focusRequester.requestFocus()
     }
 }
