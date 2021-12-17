@@ -22,7 +22,6 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -85,11 +84,10 @@ fun MomentsScreen(viewModel: MomentsViewModel = hiltViewModel()) {
     val actor = viewModel::dispatch
     val lazyListState = rememberLazyListState()
     val swipeRefreshState = rememberSwipeRefreshState(state.isRefreshing)
-    val commentInputFieldShowingState = remember { mutableStateOf(false) }
+    val closeInputField = { actor(MomentsAction.CloseCommentInputField) }
 
-    UiEffects(viewModel, commentInputFieldShowingState, lazyListState)
+    UiEffects(viewModel, lazyListState)
 
-    val closeInputField = { commentInputFieldShowingState.value = false }
     CompositionLocalProvider(LocalMomentsActor provides actor) {
         Box(
             modifier = Modifier
@@ -97,7 +95,7 @@ fun MomentsScreen(viewModel: MomentsViewModel = hiltViewModel()) {
                 .clickableWithoutRipple(closeInputField),
         ) {
             MomentsScreenContent(state, lazyListState, swipeRefreshState)
-            if (commentInputFieldShowingState.value) CommentInputField(closeInputField)
+            if (state.commentInputFieldShowingState) CommentInputField(closeInputField)
         }
     }
 }
@@ -105,7 +103,6 @@ fun MomentsScreen(viewModel: MomentsViewModel = hiltViewModel()) {
 @Composable
 private fun UiEffects(
     viewModel: MomentsViewModel,
-    commentInputFieldShowingState: MutableState<Boolean>,
     lazyListState: LazyListState
 ) {
     val density = LocalDensity.current
@@ -113,7 +110,6 @@ private fun UiEffects(
     LaunchedEffect(Unit) {
         viewModel.event.collect { event ->
             when (event) {
-                is MomentsEvent.OpenInputField -> commentInputFieldShowingState.value = true
                 is MomentsEvent.ScrollToItem -> launch {
                     val scrollOffset = getScrollOffset(lazyListState, event.index, topBarHeight)
                     delay(500L)

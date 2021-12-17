@@ -21,8 +21,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 
 sealed interface MomentsEvent {
-    object OpenInputField : MomentsEvent
-    data class ScrollToItem(val index: Int):MomentsEvent
+    data class ScrollToItem(val index: Int) : MomentsEvent
 }
 
 @HiltViewModel
@@ -55,6 +54,7 @@ class MomentsViewModel @Inject constructor(
             MomentsAction.RefreshTweets -> loadTweetsList()
             is MomentsAction.LikeAction -> handleLikeAction(action.index)
             is MomentsAction.OpenCommentInputField -> openCommentInputField(action.index)
+            MomentsAction.CloseCommentInputField -> updateCommentInputFieldShowingState(false)
             is MomentsAction.LeaveComment -> leaveComment(action.comment)
         }
     }
@@ -80,11 +80,16 @@ class MomentsViewModel @Inject constructor(
 
     private fun openCommentInputField(index: Int) {
         targetTweetIndex = index
+        updateCommentInputFieldShowingState(true)
         viewModelScope.launch {
-            _events.emit(MomentsEvent.OpenInputField)
             _events.emit(MomentsEvent.ScrollToItem(index))
         }
     }
+
+    private fun updateCommentInputFieldShowingState(value: Boolean) {
+        updateState { copy(commentInputFieldShowingState = value) }
+    }
+
 
     private fun handleLikeAction(index: Int) {
         val tweet = state.tweetList[index]
