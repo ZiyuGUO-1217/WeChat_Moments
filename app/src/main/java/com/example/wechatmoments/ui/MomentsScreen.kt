@@ -1,5 +1,7 @@
 package com.example.wechatmoments.ui
 
+import androidx.activity.OnBackPressedCallback
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.animateScrollBy
@@ -79,7 +81,10 @@ private const val BASE_ALPHA_VALUE = 0.3f
 val LocalMomentsActor = compositionLocalOf<(MomentsAction) -> Unit> { error("not provided") }
 
 @Composable
-fun MomentsScreen(viewModel: MomentsViewModel = hiltViewModel()) {
+fun MomentsScreen(
+    viewModel: MomentsViewModel = hiltViewModel(),
+    onBackPressed: () -> Unit = {}
+) {
     val state by viewModel.collectAsState()
     val actor = viewModel::dispatch
     val lazyListState = rememberLazyListState()
@@ -97,6 +102,10 @@ fun MomentsScreen(viewModel: MomentsViewModel = hiltViewModel()) {
             MomentsScreenContent(state, lazyListState, swipeRefreshState)
             if (state.commentInputFieldShowingState) CommentInputField(closeInputField)
         }
+    }
+
+    BackHandler(enabled = true) {
+        onBackPressed()
     }
 }
 

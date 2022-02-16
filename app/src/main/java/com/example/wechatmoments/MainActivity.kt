@@ -67,13 +67,16 @@ class MainActivity : ComponentActivity() {
     @Composable
     private fun Content() {
         val navHostController = rememberAnimatedNavController()
+        val onBackPressed = {
+            finish()
+        }
         val startDestination = MomentScreenRoute.Login.route
         AnimatedNavHost(navController = navHostController, startDestination = startDestination) {
             composable(route = MomentScreenRoute.Login.route) {
                 LoginScreen(navHostController)
             }
             composable(route = MomentScreenRoute.Moments.route) {
-                MomentsScreen()
+                MomentsScreen(onBackPressed = onBackPressed)
             }
         }
     }

@@ -90,7 +90,6 @@ class MomentsViewModel @Inject constructor(
         updateState { copy(commentInputFieldShowingState = value) }
     }
 
-
     private fun handleLikeAction(index: Int) {
         val tweet = state.tweetList[index]
         if (tweet.containsUser(state.userInfo.userName)) {
