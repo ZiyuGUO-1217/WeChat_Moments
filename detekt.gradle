@@ -1,0 +1,18 @@
+detekt {
+    toolVersion = "1.19.0"
+    input = files("src/main/java")
+    config = files("config/detekt/detekt.yml")
+    buildUponDefaultConfig = true
+
+    reports { // 指定输出的报告文件类型
+        html {
+            enabled = true                        // Enable/Disable HTML report (default: true)
+            destination = file("build/reports/detekt.html") // Path where HTML report will be stored (default:
+        }
+    }
+}
+
+tasks.named('detekt').configure {
+    // in order to keep detekt re-run every time
+    outputs.upToDateWhen { false }
+}
